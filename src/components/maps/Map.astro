@@ -1,0 +1,119 @@
+---
+import Item from './Item.astro';
+import Mark from './Mark.astro';
+
+interface Props {
+  locations: Location[];
+  map: string;
+  markSize?: number | [number, number];
+  scale?: number;
+  store: string;
+  translate?: [number, number];
+}
+
+type LocationId = string;
+
+export interface Location<S = string> {
+  id: LocationId;
+  sector: S;
+  depends?: LocationId | LocationId[];
+  name: string;
+  status?: 'important' | 'urgent' | 'hard' | 'careful';
+  type?: string;
+  x: number;
+  y: number;
+  avoid?: number[];
+}
+
+export type Locations<S, V extends Location<S>> = Record<string, V>;
+
+const { locations, map, markSize, scale, store, translate } = Astro.props;
+---
+<section
+  x-data={`{
+    checked: [],
+    hide: false,
+    radio: '',
+    showAll: false,
+    scale: ${scale ?? 1},
+    translateX: ${translate?.[0] ?? 0},
+    translateY: ${translate?.[1] ?? 0},
+  }`.trim().replace(/\s\s+/g, ' ')}
+  x-init={`
+    checked = JSON.parse(localStorage.getItem('${store}-checked') || '[]');
+    $watch('checked', value => {
+      localStorage.setItem('${store}-checked', JSON.stringify(value));
+      if (hide && checked.includes(radio)) {
+        radio = '';
+      }
+    });
+    radio = localStorage.getItem('${store}-radio') || '';
+    $watch('radio', value => {
+      localStorage.setItem('${store}-radio', value);
+      document.querySelector('.location:checked')?.focus();
+    });
+    showAll = localStorage.getItem('${store}-show-all') == 'true';
+    $watch('showAll', value => localStorage.setItem('${store}-show-all', value));
+    $nextTick(() => { document.querySelector('.location:checked')?.focus(); });
+  `.trim().replace(/\s\s+/g, ' ')}
+  id="locations"
+  class="relative group/locations grid grid-cols-[auto_1fr] h-[95vh]"
+>
+  <nav class="relative h-full overflow-y-scroll border text-gray-200 bg-blue-950 w-70 rounded-l text-sm">
+    <ul role="list" class="grid">
+      <li class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-10">
+        <input x-model="showAll" class="all" type="checkbox" title="Show All" />
+        <button class="px-2 py-1 border text-xs bg-slate-800" @click="checked = []">
+          Clear checboxes
+        </button>
+        <button class="px-2 py-1 border text-xs bg-slate-800" @click="radio = '';">
+          Clear radio
+        </button>
+        <button class="px-2 py-1 border text-xs bg-slate-800" @click="checked = []; radio = '';">
+          Clear all
+        </button>
+        <input x-model="hide" type="checkbox" class="hide" title="Hide completed">
+        <input type="checkbox" class="zoom" title="Allow Zoom" checked>
+      </li>
+      <li class="px-2 py-1 has-[.all:checked]/li:bg-sky-950">
+        <div class="flex">
+          <label class="cursor-pointer px-2 py-1 flex gap-2">
+            <input type="radio" name="location" value="" x-model="radio" />
+            <span>Full Map</span>
+          </label>
+        </div>
+      </li>
+      {locations.map((location, key) => (
+        <li class="group/li relative has-[.done:checked]/li:bg-green-950">
+          <div class="">
+            <div class="absolute inset-0 pointer-events-none z-0 group-hover/li:bg-black/20 group-[:has(.location:checked)]/li:bg-white/30 group-[:has(.location:checked)]/li:animate-pulse" />
+            <div class="flex gap-2 px-2 py-1 items-center">
+              <div class="w-8 text-right">{key+1}.</div>
+              <Item x-model="checked" {...{location, locations}} pos={key+1} />
+            </div>
+          </div>
+        </li>
+        ))}
+      </li>
+    </ul>
+  </nav>
+  <div class="relative h-full aspect-square border overflow-hidden">
+    <div
+      id="map-container"
+      class="absolute top-0 left-0 h-[200%] w-[200%] border border-red-300"
+      :style="{transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`}"
+    >
+      <div
+        id="map"
+        class="absolute w-full h-full bg-contain bg-no-repeat bg-center transition-transform"
+        :scale="scale"
+        style={{backgroundImage: `url('${map}')`}}
+      >
+        <slot name="map" />
+        {locations.map((location, key) => (
+          <Mark location={location} pos={key+1} size={markSize} />
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

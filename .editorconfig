@@ -1,0 +1,16 @@
+# EditorConfig helps developers define and maintain consistent coding styles between different editors and IDEs
+
+# Top-most EditorConfig file
+root = true
+
+# Set default charset to UTF-8
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+
+# Indentation settings
+[*.{astro,md,html,js,mjs,css,ts}]
+indent_style = space
+indent_size = 2
+insert_final_newline = true

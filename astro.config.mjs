@@ -1,5 +1,15 @@
 // @ts-check
+import alpinejs from '@astrojs/alpinejs';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 
+
 // https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  integrations: [alpinejs()],
+  site: 'https://wffranco.github.io',
+  base: 'games',
+  vite: {
+    plugins: [tailwindcss()],
+  },
+});

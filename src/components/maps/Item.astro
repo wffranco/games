@@ -1,0 +1,83 @@
+---
+import type { Location } from './Map.astro';
+
+type Depend = [number, Location, DificultyValues | undefined];
+type DificultyKey = keyof typeof dificulties;
+type DificultyValues = typeof dificulties[keyof typeof dificulties];
+
+interface Props {
+  'x-model'?: string;
+  class?: ClassList;
+  location: Location;
+  locations: Location[];
+  pos: number;
+}
+
+const dificulties = { e: 'easy', n: 'normal', d: 'difficult', h: 'hard' } as const;
+
+const { 'x-model': model, class: c, location, locations, pos } = Astro.props;
+const { id, depends: d, name, sector, status } = location;
+const depends = !d?.length ? [] : [d].flat().map((key) => {
+  const [id, d] = key.split('-') as [string, DificultyKey | ''];
+  const l = locations.find(l => l.id === id);
+  if (!l) return;
+  return [locations.indexOf(l!)+1, l!, d ? dificulties[d] : undefined];
+}).filter(Boolean) as Depend[];
+---
+<div class:list={["grow flex gap-2 align-middle", c]}>
+  <input x-ref={`ch${pos}`} id={`c-${pos}`} class="done" type="checkbox" value={id} x-model={model} />
+  <label
+    title={`${id||''}`}
+    class="cursor-pointer flex grow gap-2 items-center"
+    @dblclick={`$refs.ch${pos}.click()`}
+  >
+    <input
+      x-model="radio"
+      id={`r-${pos}`}
+      type="radio"
+      name="location"
+      value={id}
+      class:list={['location', sector]}
+      @keyup.space={`$refs.ch${pos}.click()`}
+    />
+    <span class={status}>
+      {id} - {name}
+    </span>
+    {depends && (
+      <span class="depends flex ml-auto font-oswald">
+        {depends.map(([pos, {id, name}, dificulty]) => (
+          <label for={`r-${pos}`} title={`Depends on ${id} - ${name}${dificulty ? ` (${dificulty})` : ''}`} class:list={['cursor-pointer', dificulty]}>
+            [{pos}]
+          </label>
+        ))}
+      </span>
+    )}
+  </label>
+</div>
+
+<style>
+@import "@/styles/global.css";
+label {
+  .careful {
+    @apply text-yellow-300 font-bold;
+  }
+  .difficult {
+    @apply text-yellow-300 font-bold;
+  }
+  .easy {
+    @apply text-sky-400 font-bold;
+  }
+  .hard {
+    @apply text-red-500 font-bold;
+  }
+  .important {
+    @apply text-green-300 font-bold;
+  }
+  .normal {
+    @apply text-gray-300 font-bold;
+  }
+  .urgent {
+    @apply font-bold;
+  }
+}
+</style>

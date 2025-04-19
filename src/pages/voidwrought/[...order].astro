@@ -1,0 +1,150 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Map from "@/components/maps/Map.astro";
+import { orders, type Order, sort } from "@/data/voidwrought/locations";
+import { sectors } from "@/data/voidwrought/item-groups";
+
+export async function getStaticPaths() {
+  return orders.map(({value}) => ({params: {order: value}}));
+}
+
+interface Params {
+  order?: Order;
+}
+
+const { order } = Astro.params as Params;
+
+const locations = sort(order);
+
+const link = (value: Order) => ['/cv/games/voidwrought', value].filter(Boolean).join('/');
+
+const uniqueSectors = [...new Set(sectors.map(sector => sector.replace(/-[0-9]+$/g, '')))];
+const name = (sector: string) => sector.replace(/[^a-z]/g, ' ').trim().replace(/^\w/g, char => char.toUpperCase());
+---
+<Layout title="Voidwrought - PC">
+  <main class="mx-auto w-max p-3 grid gap-3">
+    <h1 class="text-3xl font-bold text-center">Voidwrought {order && `(${order})`}</h1>
+    <nav>
+      <ul class="w-full flex justify-around">
+        {orders.map(({name, value}) => (
+          <li>
+            <a href={link(value)} class="border px-2 py-1 rounded bg-white/10 hover:bg-white/20">
+              {name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <Map locations={locations} markSize={1.1} store="vw" scale={.5} translate={[-50, -50]} map="/games/imgs/voidwrought/map.png">
+      {uniqueSectors.map(sector => (
+        <h2 slot="map" class={sector}>{name(sector)}</h2>
+      ))}
+    </Map>
+  </main>
+</Layout>
+
+<style>
+@import "@/styles/global.css";
+main {
+  section {
+    #map-container {
+      background: black;
+      #map {
+        label {
+          .location {
+            &::before {
+              content: '';
+              background-repeat: no-repeat;
+              background-position: center;
+              background-size: 60%;
+              @apply absolute inset-0 w-full h-full z-10;
+            }
+            /* Image Items */
+            &.devotee::before {
+              background-image: url('/cv/imgs/voidwrought/devotee.png');
+            }
+            &.dormant-salt-receptable::before {
+              background-image: url('/cv/imgs/voidwrought/dormant-salt-receptacle.png');
+            }
+            &.metal-ingot::before {
+              background-image: url('/cv/imgs/voidwrought/metal-ingot.png');
+            }
+            &.relic::before {
+              background-image: url('/cv/imgs/voidwrought/relic.png');
+            }
+            &.shard-of-vitae::before {
+              background-image: url('/cv/imgs/voidwrought/shard-of-vitae.png');
+            }
+            &.simulacrum::before {
+              background-image: url('/cv/imgs/voidwrought/simulacrum.png');
+            }
+            &.soul::before {
+              background-image: url('/cv/imgs/voidwrought/soul.png');
+            }
+          }
+        }
+        h2 {
+          @apply absolute max-w-32 text-center font-bold;
+          /* Sector titles */
+          &.the-shrine {
+            color: purple;
+            @apply top-[57%] left-[49%] -translate-x-1/2 -translate-y-1/2;
+          }
+          &.the-commons {
+            color:rgb(181, 136, 226);
+            @apply top-[64%] right-[63%] -translate-y-1/2;
+          }
+          &.the-surface {
+            color: rgb(137, 39, 39);
+            @apply top-[35%] left-[54%] -translate-x-1/2 -translate-y-1/2;
+          }
+          &.the-grand-bazaar {
+            color: rgb(226, 136, 136);
+            @apply top-[70%] left-[52%] -translate-x-1/2 -translate-y-1/2;
+          }
+          &.the-lost-garden {
+            color: rgb(218, 178, 84);
+            @apply top-[61.5%] left-[77%] -translate-x-1/2 -translate-y-1/2;
+          }
+          &.the-court {
+            color: rgb(36, 166, 62);
+            @apply top-[46%] left-[22%] -translate-x-1/2 -translate-y-1/2;
+          }
+        }
+      }
+    }
+    &:has(.zoom:checked) {
+      /* Zoom */
+      &:has(.the-shrine:checked) #map {
+        @apply scale-[6] translate-x-[5%] translate-y-[-25%];
+      }
+      &:has(.the-commons:checked) #map {
+        @apply scale-[3.6] translate-x-[58%] translate-y-[-45%];
+      }
+      &:has(.the-surface:checked) #map {
+        @apply scale-[2] translate-x-[-5%] translate-y-[15%];
+      }
+      &:has(.the-grand-bazaar:checked) #map {
+        @apply scale-[3] translate-x-[-12%] translate-y-[-30%];
+      }
+      &:has(.the-lost-garden-1:checked) #map {
+        @apply scale-[3.5] translate-x-[-129%] translate-y-[0%];
+      }
+      &:has(.the-lost-garden-2:checked) #map {
+        @apply scale-[3.4] translate-x-[-86%] translate-y-[-45%];
+      }
+      &:has(.the-abandoned-expedition:checked) #map {
+        @apply scale-[4] translate-x-[-67%] translate-y-[5%];
+      }
+      &:has(.the-court:checked) #map {
+        @apply scale-[3.8] translate-x-[97%] translate-y-[-25%];
+      }
+    }
+    &:has(.hide:checked) {
+      nav > ul > li:has(.done:checked) {
+        @apply hidden;
+      }
+    }
+  }
+}
+</style>

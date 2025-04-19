@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(
+  [data-theme="dark"], [data-system="dark"][data-theme="system"],
+  [data-theme="dark"] *, [data-system="dark"][data-theme="system"] *
+));
+
+@theme {
+  --font-lato: 'Lato', 'sans-serif';
+}

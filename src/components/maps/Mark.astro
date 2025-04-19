@@ -1,0 +1,52 @@
+---
+import type { Location } from "./Map.astro";
+
+interface Props {
+  class?: ClassList;
+  location: Location;
+  pos: number;
+  size?: number | [number, number];
+}
+
+const { class: c, location, pos, size, ...rest } = Astro.props;
+const { id, name, type, x, y } = location;
+
+const styles = [
+  `group-[:has(#r-${pos}:checked)]/locations:block`,
+  `group-[:has(#c-${pos}:checked)]/locations:text-indigo-600`,
+];
+const sx = Array.isArray(size) ? size[0] : size;
+const sy = Array.isArray(size) ? size[1] : size;
+---
+<label
+  for={`r-${pos}`}
+>
+  <i
+    class:list={["location", c, "hidden group-[:has(.all:checked)]/locations:block", type, styles]}
+    style={{ left: `${x}%`, top: `${y}%`, width: `${sx||1}%`, height: `${sy||1}%` }}
+    title={`${id} - ${name}`}
+    {...rest}
+    @dblclick={`$refs.ch${pos}.click()`}
+  >
+    <i class:list={["arrow hidden pointer-events-none", styles[0]]} />
+    <i class:list={["square text-white animate-ping hidden pointer-events-none", styles[0]]} />
+    <i class:list={["square text-yellow-300 hover:text-green-300", styles]} />
+  </i>
+</label>
+
+<style>
+@import "@/styles/global.css";
+i.location {
+  @apply absolute aspect-square;
+  > .arrow {
+    @apply absolute w-[70%] aspect-square bg-current left-[15%] bottom-full z-10;
+    @apply animate-bounce text-red-600;
+    mask: url('/cv/imgs/arrow-down.svg') no-repeat center;
+  }
+  > .square {
+    @apply absolute w-full aspect-square bg-current;
+    mask: url('/cv/imgs/square-mid-filled.svg') no-repeat center;
+    inset: 0 auto auto 0;
+  }
+}
+</style>
