@@ -10,7 +10,7 @@ end_of_line = lf
 trim_trailing_whitespace = true
 
 # Indentation settings
-[*.{astro,md,html,js,mjs,css,ts}]
+[*.{astro,md,html,js,cjs,mjs,css,ts}]
 indent_style = space
 indent_size = 2
 insert_final_newline = true

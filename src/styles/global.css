@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@use postcss-for;
 
 @custom-variant dark (&:where(
   [data-theme="dark"], [data-system="dark"][data-theme="system"],

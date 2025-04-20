@@ -31,15 +31,19 @@ const link = (value: Order) => ['/cv/games/super-metroid', value].filter(Boolean
         ))}
       </ul>
     </nav>
-    <Map locations={locations} markSize={1.6} store="sm" map="/games/imgs/super-metroid-map.gif" />
+    <Map
+      locations={locations}
+      markSize={1.6}
+      store="sm"
+    />
   </main>
 </Layout>
 
 <style>
-@import "@/styles/global.css";
 main {
   section {
     #map {
+      background-image: url('/games/imgs/super-metroid-map.gif');
       @apply scale-[.5] translate-x-[-25%] translate-y-[-25%];
     }
     &:has(.zoom:checked) {

@@ -3,8 +3,8 @@ import Item from './Item.astro';
 import Mark from './Mark.astro';
 
 interface Props {
+  class?: ClassList;
   locations: Location[];
-  map: string;
   markSize?: number | [number, number];
   scale?: number;
   store: string;
@@ -27,7 +27,7 @@ export interface Location<S = string> {
 
 export type Locations<S, V extends Location<S>> = Record<string, V>;
 
-const { locations, map, markSize, scale, store, translate } = Astro.props;
+const { class: c, locations, markSize, scale, store, translate } = Astro.props;
 ---
 <section
   x-data={`{
@@ -57,10 +57,18 @@ const { locations, map, markSize, scale, store, translate } = Astro.props;
     $nextTick(() => { document.querySelector('.location:checked')?.focus(); });
   `.trim().replace(/\s\s+/g, ' ')}
   id="locations"
-  class="relative group/locations grid grid-cols-[auto_1fr] h-[95vh]"
+  class:list={["relative group/locations grid grid-cols-[auto_1fr] h-[95vh]", c]}
 >
   <nav class="relative h-full overflow-y-scroll border text-gray-200 bg-blue-950 w-70 rounded-l text-sm">
-    <ul role="list" class="grid">
+    <ul role="list" class:list={[
+      "grid",
+      '**:data-title:in-[.careful,.dificult]:text-yellow-300',
+      '**:data-title:in-[.easy]:text-sky-400',
+      '**:data-title:in-[.hard]:text-red-500',
+      '**:data-title:in-[.important]:text-green-300',
+      '**:data-title:in-[.normal]:text-gray-300',
+      '**:data-title:in-[.urgent]:font-bold',
+    ]}>
       <li class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-10">
         <input x-model="showAll" class="all" type="checkbox" title="Show All" />
         <button class="px-2 py-1 border text-xs bg-slate-800" @click="checked = []">
@@ -89,12 +97,11 @@ const { locations, map, markSize, scale, store, translate } = Astro.props;
             <div class="absolute inset-0 pointer-events-none z-0 group-hover/li:bg-black/20 group-[:has(.location:checked)]/li:bg-white/30 group-[:has(.location:checked)]/li:animate-pulse" />
             <div class="flex gap-2 px-2 py-1 items-center">
               <div class="w-8 text-right">{key+1}.</div>
-              <Item x-model="checked" {...{location, locations}} pos={key+1} />
+              <Item {...{location, locations}} pos={key+1} />
             </div>
           </div>
         </li>
-        ))}
-      </li>
+      ))}
     </ul>
   </nav>
   <div class="relative h-full aspect-square border overflow-hidden">
@@ -106,8 +113,8 @@ const { locations, map, markSize, scale, store, translate } = Astro.props;
       <div
         id="map"
         class="absolute w-full h-full bg-contain bg-no-repeat bg-center transition-transform"
+        :class="{all: showAll}"
         :scale="scale"
-        style={{backgroundImage: `url('${map}')`}}
       >
         <slot name="map" />
         {locations.map((location, key) => (

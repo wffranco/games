@@ -6,7 +6,6 @@ type DificultyKey = keyof typeof dificulties;
 type DificultyValues = typeof dificulties[keyof typeof dificulties];
 
 interface Props {
-  'x-model'?: string;
   class?: ClassList;
   location: Location;
   locations: Location[];
@@ -15,7 +14,7 @@ interface Props {
 
 const dificulties = { e: 'easy', n: 'normal', d: 'difficult', h: 'hard' } as const;
 
-const { 'x-model': model, class: c, location, locations, pos } = Astro.props;
+const { class: c, location, locations, pos } = Astro.props;
 const { id, depends: d, name, sector, status } = location;
 const depends = !d?.length ? [] : [d].flat().map((key) => {
   const [id, d] = key.split('-') as [string, DificultyKey | ''];
@@ -25,22 +24,30 @@ const depends = !d?.length ? [] : [d].flat().map((key) => {
 }).filter(Boolean) as Depend[];
 ---
 <div class:list={["grow flex gap-2 align-middle", c]}>
-  <input x-ref={`ch${pos}`} id={`c-${pos}`} class="done" type="checkbox" value={id} x-model={model} />
+  <input
+    x-ref={`ch${pos}`}
+    x-model="checked"
+    data-checkbox={pos}
+    class="done"
+    type="checkbox"
+    value={id}
+  />
   <label
     title={`${id||''}`}
-    class="cursor-pointer flex grow gap-2 items-center"
+    class:list={["flex w-full h-full cursor-pointer grow gap-2 items-center", status]}
     @dblclick={`$refs.ch${pos}.click()`}
   >
     <input
       x-model="radio"
       id={`r-${pos}`}
+      data-radio={pos}
       type="radio"
       name="location"
       value={id}
       class:list={['location', sector]}
       @keyup.space={`$refs.ch${pos}.click()`}
     />
-    <span class={status}>
+    <span data-title>
       {id} - {name}
     </span>
     {depends && (
@@ -54,30 +61,3 @@ const depends = !d?.length ? [] : [d].flat().map((key) => {
     )}
   </label>
 </div>
-
-<style>
-@import "@/styles/global.css";
-label {
-  .careful {
-    @apply text-yellow-300 font-bold;
-  }
-  .difficult {
-    @apply text-yellow-300 font-bold;
-  }
-  .easy {
-    @apply text-sky-400 font-bold;
-  }
-  .hard {
-    @apply text-red-500 font-bold;
-  }
-  .important {
-    @apply text-green-300 font-bold;
-  }
-  .normal {
-    @apply text-gray-300 font-bold;
-  }
-  .urgent {
-    @apply font-bold;
-  }
-}
-</style>

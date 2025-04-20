@@ -1,4 +1,4 @@
-import type { Location as L, Locations as LS } from "@/components/games/metroid-maps/Map.astro";
+import type { Location as L, Locations as LS } from "@/components/maps/Map.astro";
 
 export const sectors = [
   'the-abandoned-expedition',

@@ -31,15 +31,19 @@ const link = (value: Order) => ['metroid-fusion', value].filter(Boolean).join('/
         ))}
       </ul>
     </nav>
-    <Map locations={locations} markSize={2} store="mf" map="/games/imgs/metroid-fusion-map.jpg" />
+    <Map
+      locations={locations}
+      markSize={2}
+      store="mf"
+    />
   </main>
 </Layout>
 
 <style>
-@import "@/styles/global.css";
 main {
   section {
     #map {
+      background-image: url('/games/imgs/metroid-fusion-map.jpg');
       @apply scale-[.5] translate-x-[-25%] translate-y-[-25%];
     }
     &:has(.zoom:checked) {

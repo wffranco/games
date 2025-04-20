@@ -35,7 +35,7 @@ const name = (sector: string) => sector.replace(/[^a-z]/g, ' ').trim().replace(/
         ))}
       </ul>
     </nav>
-    <Map locations={locations} markSize={1.1} store="vw" scale={.5} translate={[-50, -50]} map="/games/imgs/voidwrought/map.png">
+    <Map locations={locations} markSize={1.1} store="vw" scale={.5} translate={[-50, -50]}>
       {uniqueSectors.map(sector => (
         <h2 slot="map" class={sector}>{name(sector)}</h2>
       ))}
@@ -44,12 +44,12 @@ const name = (sector: string) => sector.replace(/[^a-z]/g, ' ').trim().replace(/
 </Layout>
 
 <style>
-@import "@/styles/global.css";
 main {
   section {
     #map-container {
       background: black;
       #map {
+        background-image: url('/games/imgs/voidwrought/map.png');
         label {
           .location {
             &::before {
@@ -57,7 +57,8 @@ main {
               background-repeat: no-repeat;
               background-position: center;
               background-size: 60%;
-              @apply absolute inset-0 w-full h-full z-10;
+              inset: 0;
+              @apply absolute w-full h-full z-10;
             }
             /* Image Items */
             &.devotee::before {
@@ -84,7 +85,9 @@ main {
           }
         }
         h2 {
-          @apply absolute max-w-32 text-center font-bold;
+          font-weight: 700;
+          max-width: 8rem;
+          @apply absolute text-center;
           /* Sector titles */
           &.the-shrine {
             color: purple;

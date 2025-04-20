@@ -11,42 +11,44 @@ interface Props {
 const { class: c, location, pos, size, ...rest } = Astro.props;
 const { id, name, type, x, y } = location;
 
-const styles = [
-  `group-[:has(#r-${pos}:checked)]/locations:block`,
-  `group-[:has(#c-${pos}:checked)]/locations:text-indigo-600`,
-];
 const sx = Array.isArray(size) ? size[0] : size;
 const sy = Array.isArray(size) ? size[1] : size;
 ---
 <label
   for={`r-${pos}`}
+  class:list={["absolute cursor-pointer", c, type]}
+  :class={`{done: checked.includes('${id}'), active: radio === '${id}'}`}
+  style={{ left: `${x}%`, top: `${y}%`, width: `${sx||1}%`, height: `${sy||1}%` }}
+  title={`${id} - ${name}`}
+  {...rest}
+  @dblclick={`$refs.ch${pos}.click()`}
 >
-  <i
-    class:list={["location", c, "hidden group-[:has(.all:checked)]/locations:block", type, styles]}
-    style={{ left: `${x}%`, top: `${y}%`, width: `${sx||1}%`, height: `${sy||1}%` }}
-    title={`${id} - ${name}`}
-    {...rest}
-    @dblclick={`$refs.ch${pos}.click()`}
-  >
-    <i class:list={["arrow hidden pointer-events-none", styles[0]]} />
-    <i class:list={["square text-white animate-ping hidden pointer-events-none", styles[0]]} />
-    <i class:list={["square text-yellow-300 hover:text-green-300", styles]} />
+  <i class="hidden [:where(#map.all,label.active)_&]:block">
+    <i
+      class:list={[
+        "hidden",
+        "[label.active_&]:block",
+        "mask-[url('/games/imgs/arrow-down.svg')]",
+        "absolute left-[15%] w-[70%] aspect-square bg-current bottom-full z-10 animate-bounce",
+        "text-red-600 pointer-events-none mask-no-repeat mask-center",
+      ]}
+    />
+    <i
+      class:list={[
+        "hidden",
+        "[label.active_&]:block",
+        "mask-[url('/games/imgs/square-mid-filled.svg')]",
+        "absolute w-full aspect-square bg-current top-0 left-0",
+        "text-white animate-ping pointer-events-none",
+      ]}
+    />
+    <i
+      class:list={[
+        "mask-[url('/games/imgs/square-mid-filled.svg')]",
+        "absolute w-full aspect-square bg-current top-0 left-0",
+        "text-yellow-300 hover:text-green-500",
+        "[label.done_&]:text-indigo-600 [label.done_&]:hover:text-green-700",
+      ]}
+    />
   </i>
 </label>
-
-<style>
-@import "@/styles/global.css";
-i.location {
-  @apply absolute aspect-square;
-  > .arrow {
-    @apply absolute w-[70%] aspect-square bg-current left-[15%] bottom-full z-10;
-    @apply animate-bounce text-red-600;
-    mask: url('/cv/imgs/arrow-down.svg') no-repeat center;
-  }
-  > .square {
-    @apply absolute w-full aspect-square bg-current;
-    mask: url('/cv/imgs/square-mid-filled.svg') no-repeat center;
-    inset: 0 auto auto 0;
-  }
-}
-</style>
