@@ -39,6 +39,50 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
+    zoomBy(factor, a = 0.5, b = 0.5) {
+      const next = Math.max(0.1, Math.min(20, this.scale * factor));
+      this.translateX += 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
+      this.translateY += 50 * ((b - 1 + next) / next - (b - 1 + this.scale) / this.scale);
+      this.scale = next;
+    },
+    onWheel(e) {
+      const r = e.currentTarget.getBoundingClientRect();
+      this.zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    },
+    zoomIn() { this.zoomBy(1.3); },
+    zoomOut() { this.zoomBy(1 / 1.3); },
+    drag: false,
+    dragMoved: false,
+    dragX: 0,
+    dragY: 0,
+    onDragStart(e) {
+      this.drag = true;
+      this.dragMoved = false;
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+      e.preventDefault();
+    },
+    onDragMove(e) {
+      if (!this.drag) return;
+      const r = this.$refs.viewport.getBoundingClientRect();
+      if (Math.abs(e.clientX - this.dragX) + Math.abs(e.clientY - this.dragY) > 4) {
+        this.dragMoved = true;
+      }
+      this.translateX += 50 * (e.clientX - this.dragX) / r.width / this.scale;
+      this.translateY += 50 * (e.clientY - this.dragY) / r.height / this.scale;
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+    },
+    onDragEnd() {
+      this.drag = false;
+    },
+    onClickCapture(e) {
+      if (this.dragMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.dragMoved = false;
+    },
   }`
     .trim()
     .replace(/\s\s+/g, " ")}
@@ -110,7 +154,6 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
           class="hide"
           title="Hide completed"
         />
-        <input type="checkbox" class="zoom" title="Allow Zoom" checked />
       </li>
       <li class="px-2 py-1 has-[.all:checked]/li:bg-sky-950">
         <div class="flex">
@@ -135,17 +178,42 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
       }
     </ul>
   </nav>
-  <div class="relative h-full aspect-square border overflow-hidden">
+  <div
+    x-ref="viewport"
+    class="relative h-full aspect-square border overflow-hidden select-none cursor-grab active:cursor-grabbing bg-black"
+    @wheel.prevent="onWheel($event)"
+    @mousedown="onDragStart($event)"
+    @mousemove.window="onDragMove($event)"
+    @mouseup.window="onDragEnd"
+    @click.capture="onClickCapture($event)"
+  >
+    <div class="absolute top-2 right-2 z-30 flex gap-2">
+      <button
+        class="grid place-items-center size-8 rounded border text-md font-bold text-gray-800 dark:text-gray-100 bg-white/80 dark:bg-gray-900/80 shadow hover:bg-white dark:hover:bg-gray-700 select-none"
+        type="button"
+        title="Zoom in"
+        @click="zoomIn()"
+      >
+        <span class="translate-y-[-1px]">+</span>
+      </button>
+      <button
+        class="grid place-items-center size-8 rounded border text-md font-bold text-gray-800 dark:text-gray-100 bg-white/80 dark:bg-gray-900/80 shadow hover:bg-white dark:hover:bg-gray-700 select-none"
+        type="button"
+        title="Zoom out"
+        @click="zoomOut()"
+      >
+        <span class="translate-y-[-1px]">−</span>
+      </button>
+    </div>
     <div
       id="map-container"
-      class="absolute top-0 left-0 h-[200%] w-[200%] border border-red-300"
+      class="absolute top-0 left-0 h-[200%] w-[200%]"
       :style="{transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`}"
     >
       <div
         id="map"
-        class="absolute w-full h-full bg-contain bg-no-repeat bg-center transition-transform"
+        class="absolute w-full h-full bg-contain bg-no-repeat bg-center"
         :class="{all: showAll}"
-        :scale="scale"
       >
         <slot name="map" />
         {

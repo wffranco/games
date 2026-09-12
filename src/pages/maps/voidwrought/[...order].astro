@@ -4,9 +4,8 @@ import Map from "@/components/maps/Map.astro";
 import { orders, type Order, sort } from "@/data/voidwrought/locations";
 import { sectors } from "@/data/voidwrought/item-groups";
 
-export async function getStaticPaths() {
-  return orders.map(({ value }) => ({ params: { order: value } }));
-}
+export const getStaticPaths = async () =>
+  orders.map(({ value }) => ({ params: { order: value } }));
 
 interface Params {
   order?: Order;
@@ -139,33 +138,6 @@ const name = (sector: string) =>
               @apply top-[46%] left-[22%] -translate-x-1/2 -translate-y-1/2;
             }
           }
-        }
-      }
-      &:has(.zoom:checked) {
-        /* Zoom */
-        &:has(.the-shrine:checked) #map {
-          @apply scale-[6] translate-x-[5%] translate-y-[-25%];
-        }
-        &:has(.the-commons:checked) #map {
-          @apply scale-[3.6] translate-x-[58%] translate-y-[-45%];
-        }
-        &:has(.the-surface:checked) #map {
-          @apply scale-[2] translate-x-[-5%] translate-y-[15%];
-        }
-        &:has(.the-grand-bazaar:checked) #map {
-          @apply scale-[3] translate-x-[-12%] translate-y-[-30%];
-        }
-        &:has(.the-lost-garden-1:checked) #map {
-          @apply scale-[3.5] translate-x-[-129%] translate-y-[0%];
-        }
-        &:has(.the-lost-garden-2:checked) #map {
-          @apply scale-[3.4] translate-x-[-86%] translate-y-[-45%];
-        }
-        &:has(.the-abandoned-expedition:checked) #map {
-          @apply scale-[4] translate-x-[-67%] translate-y-[5%];
-        }
-        &:has(.the-court:checked) #map {
-          @apply scale-[3.8] translate-x-[97%] translate-y-[-25%];
         }
       }
       &:has(.hide:checked) {
