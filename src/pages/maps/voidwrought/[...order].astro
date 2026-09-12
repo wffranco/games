@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Map from "@/components/maps/Map.astro";
-import { orders, type Order, sort } from "@/data/voidwrought/locations";
+import { orders, type Order, sortedBy } from "@/data/voidwrought/locations";
 import { sectors } from "@/data/voidwrought/item-groups";
 
 export const getStaticPaths = async () =>
@@ -13,14 +13,11 @@ interface Params {
 
 const { order } = Astro.params as Params;
 
-const locations = sort(order);
+const locations = sortedBy(order);
 
 const link = (value: Order) =>
   ["/games/maps/voidwrought", value].filter(Boolean).join("/");
 
-const uniqueSectors = [
-  ...new Set(sectors.map((sector) => sector.replace(/-[0-9]+$/g, ""))),
-];
 const name = (sector: string) =>
   sector
     .replace(/[^a-z]/g, " ")
@@ -57,9 +54,9 @@ const name = (sector: string) =>
       translate={[-50, -50]}
     >
       {
-        uniqueSectors.map((sector) => (
-          <h2 slot="map" class={sector}>
-            {name(sector)}
+        sectors.map((sector) => (
+          <h2 slot="map" id={sector}>
+            {name(sector.replace(/-[0-9]+$/g, ""))}
           </h2>
         ))
       }
@@ -76,66 +73,103 @@ const name = (sector: string) =>
           background-image: url("/games/imgs/voidwrought/map.png");
           label {
             .location {
-              &::before {
-                content: "";
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 60%;
-                inset: 0;
-                @apply absolute w-full h-full z-10;
-              }
+              @apply border-3 border-transparent bg-center bg-contain bg-no-repeat translate-x-[0.5px] z-[2];
               /* Image Items */
-              &.devotee::before {
-                background-image: url("/cv/imgs/voidwrought/devotee.png");
+              &.devotee {
+                background-image: url("/games/imgs/voidwrought/devotee.png");
               }
-              &.dormant-salt-receptable::before {
-                background-image: url("/cv/imgs/voidwrought/dormant-salt-receptacle.png");
+              &.dormant-salt-receptable {
+                background-image: url("/games/imgs/voidwrought/dormant-salt-receptacle.png");
               }
-              &.metal-ingot::before {
-                background-image: url("/cv/imgs/voidwrought/metal-ingot.png");
+              &.metal-ingot {
+                background-image: url("/games/imgs/voidwrought/metal-ingot.png");
               }
-              &.relic::before {
-                background-image: url("/cv/imgs/voidwrought/relic.png");
+              &.relic {
+                background-image: url("/games/imgs/voidwrought/relic.png");
               }
-              &.shard-of-vitae::before {
-                background-image: url("/cv/imgs/voidwrought/shard-of-vitae.png");
+              &.shard-of-vitae {
+                background-image: url("/games/imgs/voidwrought/shard-of-vitae.png");
               }
-              &.simulacrum::before {
-                background-image: url("/cv/imgs/voidwrought/simulacrum.png");
+              &.simulacrum {
+                background-image: url("/games/imgs/voidwrought/simulacrum.png");
               }
-              &.soul::before {
-                background-image: url("/cv/imgs/voidwrought/soul.png");
+              &.soul {
+                background-image: url("/games/imgs/voidwrought/soul.png");
               }
             }
           }
           h2 {
             font-weight: 700;
             max-width: 8rem;
-            @apply absolute text-center;
+            @apply absolute text-center -translate-x-1/2 -translate-y-1/2;
             /* Sector titles */
-            &.the-shrine {
-              color: purple;
-              @apply top-[57%] left-[49%] -translate-x-1/2 -translate-y-1/2;
+            &#the-abandoned-expedition {
+              color: rgb(173, 170, 161);
+              @apply top-[45.6%] left-[55.5%];
             }
-            &.the-commons {
+            &#the-commons {
               color: rgb(181, 136, 226);
-              @apply top-[64%] right-[63%] -translate-y-1/2;
+              @apply top-[64%] left-[33%];
             }
-            &.the-surface {
-              color: rgb(137, 39, 39);
-              @apply top-[35%] left-[54%] -translate-x-1/2 -translate-y-1/2;
+            &#the-court {
+              color: rgb(63, 156, 81);
+              @apply top-[46.5%] left-[24%];
             }
-            &.the-grand-bazaar {
-              color: rgb(226, 136, 136);
+            &#the-grand-bazaar {
+              color: rgb(209, 109, 109);
               @apply top-[70%] left-[52%] -translate-x-1/2 -translate-y-1/2;
             }
-            &.the-lost-garden {
-              color: rgb(218, 178, 84);
-              @apply top-[61.5%] left-[77%] -translate-x-1/2 -translate-y-1/2;
+            &#the-lost-garden-1,
+            &#the-lost-garden-2 {
+              color: rgb(178, 138, 52);
             }
-            &.the-court {
-              color: rgb(36, 166, 62);
-              @apply top-[46%] left-[22%] -translate-x-1/2 -translate-y-1/2;
+            &#the-lost-garden-1 {
+              @apply top-[55.8%] left-[83%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-lost-garden-2 {
+              @apply top-[62.5%] left-[74%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-mirrorways {
+              color: rgb(80, 140, 153);
+              @apply top-[50%] left-[6.5%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-obsidian-observatory {
+              color: rgb(181, 92, 210);
+              @apply top-[32%] left-[87%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-old-waters-1,
+            &#the-old-waters-2,
+            &#the-old-waters-3 {
+              color: rgb(94, 182, 201);
+            }
+            &#the-old-waters-1 {
+              @apply top-[51%] left-[36%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-old-waters-2 {
+              max-width: 6rem;
+              @apply top-[46.5%] left-[45.3%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-old-waters-3 {
+              @apply top-[58%] left-[70.4%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-repository-of-the-unknown-1,
+            &#the-repository-of-the-unknown-2 {
+              color: rgb(150, 166, 30);
+            }
+            &#the-repository-of-the-unknown-1 {
+              max-width: 15rem;
+              @apply top-[75%] left-[70.1%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-repository-of-the-unknown-2 {
+              @apply top-[70%] left-[92.7%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-shrine {
+              color: rgb(94, 31, 120);
+              @apply top-[57%] left-[49%] -translate-x-1/2 -translate-y-1/2;
+            }
+            &#the-surface {
+              color: rgb(137, 39, 39);
+              @apply top-[36%] left-[54%] -translate-x-1/2 -translate-y-1/2;
             }
           }
         }

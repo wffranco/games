@@ -1,23 +1,25 @@
 import { ac, af, b, c, d, dr, dsr, e, je, mi, o, q, r, s, sectors, so, sv, u, type Location } from './item-groups';
 
-export type Order = 'advanced' | 'sectors' | undefined;
+export type Order = 'advanced' | 'sectors' | 'type' | undefined;
 
 export const orders = [
   { name: 'Chronological Order', value: undefined },
   { name: 'Advanced Order', value: 'advanced' },
   { name: 'Order by Sectors', value: 'sectors' },
+  { name: 'Order by Type', value: 'type' },
 ] satisfies { name: string; value: Order }[];
 
-export function sort(order?: Order): Location[] {
+export function sortedBy(order?: Order): Location[] {
   switch (order) {
     case 'advanced': return advanced;
     case 'sectors': return chrono.slice().sort((a, b) => sectors.indexOf(a.sector) - sectors.indexOf(b.sector));
+    case 'type': return chrono.slice().sort((a, b) => a.type.localeCompare(b.type));
   }
   return chrono;
 }
 
 /** Constructing a list with the chronological order of locations */
-const list = [
+export const chrono = [
   // The Shrine
   o.oAs,
   dsr.dsr01,
@@ -102,6 +104,84 @@ const list = [
 
 /** Constructing a list with the chronological order of locations */
 export const advanced = [
+  // The Shrine
+  o.oAs,
+  dsr.dsr01,
+  // The Commons
+  je.jeTr,
+  sv.sv01,
+  s.sSld,
+  dsr.dsr02,
+  c.c01,
+  af.af01,
+  b.bTc,
+  s.sLg,
+  d.d01,
+  mi.mi01,
+  je.jeIsi,
+  b.mb01,
+  sv.sv02,
+  d.d02,
+  r.rCor,
+  af.af02,
+  sv.sv03,
+  sv.sv04,
+  b.mb02,
+  sv.sv05,
+  e.e01,
+  af.af03,
+  af.af04,
+  dr.dr01,
+  mi.mi02,
+  s.sTp,
+  sv.sv06,
+  dr.dr02,
+  c.c02,
+  q.qPr,
+  b.bEE,
+  s.sPd,
+  d.d03,
+  af.af05,
+  sv.sv07,
+  b.mb03,
+  af.af06,
+  c.c03,
+  sv.sv08,
+  q.qLc,
+  af.af07,
+  mi.mi04,
+  je.jeTn,
+  sv.sv09,
+  // Unknown / unordered
+  af.af100,
+  d.d04,
+  d.d05,
+  d.d06,
+  d.d07,
+  d.d08,
+  dr.dr03,
+  dsr.dsr03,
+  dsr.dsr04,
+  dsr.dsr05,
+  mi.mi03,
+  r.rLt,
+  s.sCa,
+  s.sD,
+  s.sDj,
+  s.sH,
+  s.sSlt,
+  s.sWc,
+  so.so01,
+  sv.sv100,
+  sv.sv101,
+  sv.sv102,
+  sv.sv103,
+  sv.sv104,
+  sv.sv106,
+  sv.sv107,
+  sv.sv108,
+  sv.sv109,
+  sv.sv110,
+  sv.sv111,
+  sv.sv112,
 ] satisfies Location[];
-
-export const chrono = list;
