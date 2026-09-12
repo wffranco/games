@@ -28,6 +28,8 @@ export interface Location<S = string> {
 export type Locations<S, V extends Location<S>> = Record<string, V>;
 
 const { class: c, locations, markSize, scale, store, translate } = Astro.props;
+const markSizes = Array.isArray(markSize) ? markSize : [markSize ?? 1, markSize ?? 1];
+const [markX, markY] = markSizes;
 ---
 
 <section
@@ -36,9 +38,12 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     hide: false,
     radio: '',
     showAll: false,
+    centering: false,
+    centerTimer: 0,
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
+    focus: ${JSON.stringify(Object.fromEntries(locations.map(l => [l.id, [l.x, l.y]])))},
     zoomBy(factor, a = 0.5, b = 0.5) {
       const next = Math.max(0.1, Math.min(20, this.scale * factor));
       this.translateX += 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
@@ -51,6 +56,17 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     },
     zoomIn() { this.zoomBy(1.3); },
     zoomOut() { this.zoomBy(1 / 1.3); },
+    centerOn(id) {
+      const [x, y] = this.focus[id] || [];
+      if (x == null) return;
+      const s = Math.max(this.scale, 2.5);
+      this.centering = true;
+      clearTimeout(this.centerTimer);
+      this.translateX = 50 - 25 / s - x - ${markX} / 2;
+      this.translateY = 50 - 25 / s - y - ${markY} / 2;
+      this.scale = s;
+      this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
+    },
     drag: false,
     dragMoved: false,
     dragX: 0,
@@ -97,11 +113,12 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     radio = localStorage.getItem('${store}-radio') || '';
     $watch('radio', value => {
       localStorage.setItem('${store}-radio', value);
+      if (value) centerOn(value);
       document.querySelector('.location:checked')?.focus();
     });
     showAll = localStorage.getItem('${store}-show-all') == 'true';
     $watch('showAll', value => localStorage.setItem('${store}-show-all', value));
-    $nextTick(() => { document.querySelector('.location:checked')?.focus(); });
+    $nextTick(() => { document.querySelector('.location:checked')?.focus(); if (radio) centerOn(radio); });
   `
     .trim()
     .replace(/\s\s+/g, " ")}
@@ -206,8 +223,9 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
       </button>
     </div>
     <div
-      id="map-container"
-      class="absolute top-0 left-0 h-[200%] w-[200%]"
+id="map-container"
+      class="absolute top-0 left-0 h-[200%] w-[200%] border border-red-300"
+      :class="{'transition-transform duration-300 ease-out': centering}"
       :style="{transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`}"
     >
       <div
