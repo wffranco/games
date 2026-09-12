@@ -15,7 +15,7 @@ const { order } = Astro.params as Params;
 
 const locations = sort(order);
 
-const link = (value: Order) => ['/cv/games/super-metroid', value].filter(Boolean).join('/');
+const link = (value: Order) => ['/games/maps/super-metroid', value].filter(Boolean).join('/');
 ---
 <Layout title="Super Metroid - SNES">
   <main class="mx-auto w-max p-3 grid gap-3">

@@ -2,35 +2,25 @@
 import Link from "@/components/Link.astro";
 import Layout from "@/layouts/Layout.astro";
 
-const games = [
+const sections = [
   {
-    title: "Metriod Fusion",
-    link: "metroid-fusion",
-    platform: "GBA",
-  },
-  {
-    title: "Super Metroid",
-    link: "super-metroid",
-    platform: "SNES",
-  },
-  {
-    title: "Voidwrought",
-    link: "voidwrought",
-    platform: "PC",
+    title: "Maps",
+    link: "maps",
+    description: "Interactive game maps",
   },
 ];
 ---
 
-<Layout title="Curriculum Vitae - Willem Franco">
+<Layout title="Games - Willem Franco">
   <main class="mx-auto max-w-4xl print:max-w-none p-2 grid gap-3 min-h-screen">
     <h1 class="text-3xl font-bold text-center">Games</h1>
     <section>
       <ul class="grid gap-2">
-        {games.map((game) => (
+        {sections.map((section) => (
           <li class="p-2 bg-white dark:bg-gray-700 rounded shadow">
-            <Link href={`/games/${game.link}`} class="px-4 py-2 text-blue-500 dark:text-blue-300 hover:underline w-full flex items-center justify-between">
-              <span class="text-xl font-bold">{game.title}</span>
-              <span class="text-sm font-light"> ({game.platform})</span>
+            <Link href={`/games/${section.link}`} class="px-4 py-2 text-blue-500 dark:text-blue-300 hover:underline w-full flex items-center justify-between">
+              <span class="text-xl font-bold">{section.title}</span>
+              <span class="text-sm font-light">{section.description}</span>
             </Link>
           </li>
         ))}

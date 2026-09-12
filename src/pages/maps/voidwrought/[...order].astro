@@ -16,7 +16,7 @@ const { order } = Astro.params as Params;
 
 const locations = sort(order);
 
-const link = (value: Order) => ['/cv/games/voidwrought', value].filter(Boolean).join('/');
+const link = (value: Order) => ['/games/maps/voidwrought', value].filter(Boolean).join('/');
 
 const uniqueSectors = [...new Set(sectors.map(sector => sector.replace(/-[0-9]+$/g, '')))];
 const name = (sector: string) => sector.replace(/[^a-z]/g, ' ').trim().replace(/^\w/g, char => char.toUpperCase());
