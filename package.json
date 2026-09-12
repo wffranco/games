@@ -9,11 +9,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/alpinejs": "^0.4.6",
+    "@astrojs/alpinejs": "^1.0.0",
     "@tailwindcss/vite": "^4.1.4",
     "@types/alpinejs": "^3.13.11",
     "alpinejs": "^3.14.9",
-    "astro": "^5.7.4",
+    "astro": "^7.3.2",
     "postcss-for": "^2.1.1",
     "tailwindcss": "^4.1.4"
   }
