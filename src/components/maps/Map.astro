@@ -1,6 +1,6 @@
 ---
-import Item from './Item.astro';
-import Mark from './Mark.astro';
+import Item from "./Item.astro";
+import Mark from "./Mark.astro";
 
 interface Props {
   class?: ClassList;
@@ -18,7 +18,7 @@ export interface Location<S = string> {
   sector: S;
   depends?: LocationId | LocationId[];
   name: string;
-  status?: 'important' | 'urgent' | 'hard' | 'careful';
+  status?: "important" | "urgent" | "hard" | "careful";
   type?: string;
   x: number;
   y: number;
@@ -29,6 +29,7 @@ export type Locations<S, V extends Location<S>> = Record<string, V>;
 
 const { class: c, locations, markSize, scale, store, translate } = Astro.props;
 ---
+
 <section
   x-data={`{
     checked: [],
@@ -38,7 +39,9 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
-  }`.trim().replace(/\s\s+/g, ' ')}
+  }`
+    .trim()
+    .replace(/\s\s+/g, " ")}
   x-init={`
     checked = JSON.parse(localStorage.getItem('${store}-checked') || '[]');
     $watch('checked', value => {
@@ -55,33 +58,59 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
     showAll = localStorage.getItem('${store}-show-all') == 'true';
     $watch('showAll', value => localStorage.setItem('${store}-show-all', value));
     $nextTick(() => { document.querySelector('.location:checked')?.focus(); });
-  `.trim().replace(/\s\s+/g, ' ')}
+  `
+    .trim()
+    .replace(/\s\s+/g, " ")}
   id="locations"
-  class:list={["relative group/locations grid grid-cols-[auto_1fr] h-[95vh]", c]}
+  class:list={[
+    "relative group/locations grid grid-cols-[auto_1fr] h-[95vh]",
+    c,
+  ]}
 >
-  <nav class="relative h-full overflow-y-scroll border text-gray-200 bg-blue-950 w-70 rounded-l text-sm">
-    <ul role="list" class:list={[
-      "grid",
-      '**:data-title:in-[.careful,.dificult]:text-yellow-300',
-      '**:data-title:in-[.easy]:text-sky-400',
-      '**:data-title:in-[.hard]:text-red-500',
-      '**:data-title:in-[.important]:text-green-300',
-      '**:data-title:in-[.normal]:text-gray-300',
-      '**:data-title:in-[.urgent]:font-bold',
-    ]}>
-      <li class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-10">
+  <nav
+    class="relative h-full overflow-y-scroll border text-gray-200 bg-blue-950 w-70 rounded-l text-sm"
+  >
+    <ul
+      role="list"
+      class:list={[
+        "grid",
+        "**:data-title:in-[.careful,.dificult]:text-yellow-300",
+        "**:data-title:in-[.easy]:text-sky-400",
+        "**:data-title:in-[.hard]:text-red-500",
+        "**:data-title:in-[.important]:text-green-300",
+        "**:data-title:in-[.normal]:text-gray-300",
+        "**:data-title:in-[.urgent]:font-bold",
+      ]}
+    >
+      <li
+        class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-10"
+      >
         <input x-model="showAll" class="all" type="checkbox" title="Show All" />
-        <button class="px-2 py-1 border text-xs bg-slate-800" @click="checked = []">
+        <button
+          class="px-2 py-1 border text-xs bg-slate-800"
+          @click="checked = []"
+        >
           Clear checboxes
         </button>
-        <button class="px-2 py-1 border text-xs bg-slate-800" @click="radio = '';">
+        <button
+          class="px-2 py-1 border text-xs bg-slate-800"
+          @click="radio = '';"
+        >
           Clear radio
         </button>
-        <button class="px-2 py-1 border text-xs bg-slate-800" @click="checked = []; radio = '';">
+        <button
+          class="px-2 py-1 border text-xs bg-slate-800"
+          @click="checked = []; radio = '';"
+        >
           Clear all
         </button>
-        <input x-model="hide" type="checkbox" class="hide" title="Hide completed">
-        <input type="checkbox" class="zoom" title="Allow Zoom" checked>
+        <input
+          x-model="hide"
+          type="checkbox"
+          class="hide"
+          title="Hide completed"
+        />
+        <input type="checkbox" class="zoom" title="Allow Zoom" checked />
       </li>
       <li class="px-2 py-1 has-[.all:checked]/li:bg-sky-950">
         <div class="flex">
@@ -91,17 +120,19 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
           </label>
         </div>
       </li>
-      {locations.map((location, key) => (
-        <li class="group/li relative has-[.done:checked]/li:bg-green-950">
-          <div class="">
-            <div class="absolute inset-0 pointer-events-none z-0 group-hover/li:bg-black/20 group-[:has(.location:checked)]/li:bg-white/30 group-[:has(.location:checked)]/li:animate-pulse" />
-            <div class="flex gap-2 px-2 py-1 items-center">
-              <div class="w-8 text-right">{key+1}.</div>
-              <Item {...{location, locations}} pos={key+1} />
+      {
+        locations.map((location, key) => (
+          <li class="group/li relative has-[.done:checked]/li:bg-green-950">
+            <div class="">
+              <div class="absolute inset-0 pointer-events-none z-0 group-hover/li:bg-black/20 group-[:has(.location:checked)]/li:bg-white/30 group-[:has(.location:checked)]/li:animate-pulse" />
+              <div class="flex gap-2 px-2 py-1 items-center">
+                <div class="w-8 text-right">{key + 1}.</div>
+                <Item {...{ location, locations }} pos={key + 1} />
+              </div>
             </div>
-          </div>
-        </li>
-      ))}
+          </li>
+        ))
+      }
     </ul>
   </nav>
   <div class="relative h-full aspect-square border overflow-hidden">
@@ -117,9 +148,11 @@ const { class: c, locations, markSize, scale, store, translate } = Astro.props;
         :scale="scale"
       >
         <slot name="map" />
-        {locations.map((location, key) => (
-          <Mark location={location} pos={key+1} size={markSize} />
-        ))}
+        {
+          locations.map((location, key) => (
+            <Mark location={location} pos={key + 1} size={markSize} />
+          ))
+        }
       </div>
     </div>
   </div>

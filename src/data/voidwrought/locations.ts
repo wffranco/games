@@ -3,10 +3,10 @@ import { ac, af, b, c, d, dr, dsr, e, je, mi, o, q, r, s, sectors, so, sv, u, ty
 export type Order = 'advanced' | 'sectors' | undefined;
 
 export const orders = [
-  {name: 'Chronological Order', value: undefined},
-  {name: 'Advanced Order', value: 'advanced'},
-  {name: 'Order by Sectors', value: 'sectors'},
-] satisfies {name: string; value: Order}[];
+  { name: 'Chronological Order', value: undefined },
+  { name: 'Advanced Order', value: 'advanced' },
+  { name: 'Order by Sectors', value: 'sectors' },
+] satisfies { name: string; value: Order }[];
 
 export function sort(order?: Order): Location[] {
   switch (order) {

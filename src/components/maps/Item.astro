@@ -1,9 +1,9 @@
 ---
-import type { Location } from './Map.astro';
+import type { Location } from "./Map.astro";
 
 type Depend = [number, Location, DificultyValues | undefined];
 type DificultyKey = keyof typeof dificulties;
-type DificultyValues = typeof dificulties[keyof typeof dificulties];
+type DificultyValues = (typeof dificulties)[keyof typeof dificulties];
 
 interface Props {
   class?: ClassList;
@@ -12,17 +12,28 @@ interface Props {
   pos: number;
 }
 
-const dificulties = { e: 'easy', n: 'normal', d: 'difficult', h: 'hard' } as const;
+const dificulties = {
+  e: "easy",
+  n: "normal",
+  d: "difficult",
+  h: "hard",
+} as const;
 
 const { class: c, location, locations, pos } = Astro.props;
 const { id, depends: d, name, sector, status } = location;
-const depends = !d?.length ? [] : [d].flat().map((key) => {
-  const [id, d] = key.split('-') as [string, DificultyKey | ''];
-  const l = locations.find(l => l.id === id);
-  if (!l) return;
-  return [locations.indexOf(l!)+1, l!, d ? dificulties[d] : undefined];
-}).filter(Boolean) as Depend[];
+const depends = !d?.length
+  ? []
+  : ([d]
+      .flat()
+      .map((key) => {
+        const [id, d] = key.split("-") as [string, DificultyKey | ""];
+        const l = locations.find((l) => l.id === id);
+        if (!l) return;
+        return [locations.indexOf(l!) + 1, l!, d ? dificulties[d] : undefined];
+      })
+      .filter(Boolean) as Depend[]);
 ---
+
 <div class:list={["grow flex gap-2 align-middle", c]}>
   <input
     x-ref={`ch${pos}`}
@@ -33,8 +44,11 @@ const depends = !d?.length ? [] : [d].flat().map((key) => {
     value={id}
   />
   <label
-    title={`${id||''}`}
-    class:list={["flex w-full h-full cursor-pointer grow gap-2 items-center", status]}
+    title={`${id || ""}`}
+    class:list={[
+      "flex w-full h-full cursor-pointer grow gap-2 items-center",
+      status,
+    ]}
     @dblclick={`$refs.ch${pos}.click()`}
   >
     <input
@@ -44,20 +58,26 @@ const depends = !d?.length ? [] : [d].flat().map((key) => {
       type="radio"
       name="location"
       value={id}
-      class:list={['location', sector]}
+      class:list={["location", sector]}
       @keyup.space={`$refs.ch${pos}.click()`}
     />
     <span data-title>
       {id} - {name}
     </span>
-    {depends && (
-      <span class="depends flex ml-auto font-oswald">
-        {depends.map(([pos, {id, name}, dificulty]) => (
-          <label for={`r-${pos}`} title={`Depends on ${id} - ${name}${dificulty ? ` (${dificulty})` : ''}`} class:list={['cursor-pointer', dificulty]}>
-            [{pos}]
-          </label>
-        ))}
-      </span>
-    )}
+    {
+      depends && (
+        <span class="depends flex ml-auto font-oswald">
+          {depends.map(([pos, { id, name }, dificulty]) => (
+            <label
+              for={`r-${pos}`}
+              title={`Depends on ${id} - ${name}${dificulty ? ` (${dificulty})` : ""}`}
+              class:list={["cursor-pointer", dificulty]}
+            >
+              [{pos}]
+            </label>
+          ))}
+        </span>
+      )
+    }
   </label>
 </div>

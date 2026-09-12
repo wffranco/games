@@ -3,9 +3,9 @@ import { as, d, dr, et, h, m, nr, o, pb, sectors, sl, type Location } from './it
 export type Order = 'sectors' | undefined;
 
 export const orders = [
-  {name: 'Chronological Order', value: undefined},
-  {name: 'Order by Sectors', value: 'sectors'},
-] satisfies {name: string; value: Order}[];
+  { name: 'Chronological Order', value: undefined },
+  { name: 'Order by Sectors', value: 'sectors' },
+] satisfies { name: string; value: Order }[];
 
 export function sort(order?: Order): Location[] {
   switch (order) {

@@ -14,11 +14,17 @@ const { id, name, type, x, y } = location;
 const sx = Array.isArray(size) ? size[0] : size;
 const sy = Array.isArray(size) ? size[1] : size;
 ---
+
 <label
   for={`r-${pos}`}
   class:list={["absolute cursor-pointer", c, type]}
   :class={`{done: checked.includes('${id}'), active: radio === '${id}'}`}
-  style={{ left: `${x}%`, top: `${y}%`, width: `${sx||1}%`, height: `${sy||1}%` }}
+  style={{
+    left: `${x}%`,
+    top: `${y}%`,
+    width: `${sx || 1}%`,
+    height: `${sy || 1}%`,
+  }}
   title={`${id} - ${name}`}
   {...rest}
   @dblclick={`$refs.ch${pos}.click()`}
@@ -31,8 +37,7 @@ const sy = Array.isArray(size) ? size[1] : size;
         "mask-[url('/games/imgs/arrow-down.svg')]",
         "absolute left-[15%] w-[70%] aspect-square bg-current bottom-full z-10 animate-bounce",
         "text-red-600 pointer-events-none mask-no-repeat mask-center",
-      ]}
-    />
+      ]}></i>
     <i
       class:list={[
         "hidden",
@@ -40,15 +45,13 @@ const sy = Array.isArray(size) ? size[1] : size;
         "mask-[url('/games/imgs/square-mid-filled.svg')]",
         "absolute w-full aspect-square bg-current top-0 left-0",
         "text-white animate-ping pointer-events-none",
-      ]}
-    />
+      ]}></i>
     <i
       class:list={[
         "mask-[url('/games/imgs/square-mid-filled.svg')]",
         "absolute w-full aspect-square bg-current top-0 left-0",
         "text-yellow-300 hover:text-green-500",
         "[label.done_&]:text-indigo-600 [label.done_&]:hover:text-green-700",
-      ]}
-    />
+      ]}></i>
   </i>
 </label>

@@ -16,14 +16,19 @@ const sections = [
     <h1 class="text-3xl font-bold text-center">Games</h1>
     <section>
       <ul class="grid gap-2">
-        {sections.map((section) => (
-          <li class="p-2 bg-white dark:bg-gray-700 rounded shadow">
-            <Link href={`/games/${section.link}`} class="px-4 py-2 text-blue-500 dark:text-blue-300 hover:underline w-full flex items-center justify-between">
-              <span class="text-xl font-bold">{section.title}</span>
-              <span class="text-sm font-light">{section.description}</span>
-            </Link>
-          </li>
-        ))}
+        {
+          sections.map((section) => (
+            <li class="p-2 bg-white dark:bg-gray-700 rounded shadow">
+              <Link
+                href={`/games/${section.link}`}
+                class="px-4 py-2 text-blue-500 dark:text-blue-300 hover:underline w-full flex items-center justify-between"
+              >
+                <span class="text-xl font-bold">{section.title}</span>
+                <span class="text-sm font-light">{section.description}</span>
+              </Link>
+            </li>
+          ))
+        }
       </ul>
     </section>
   </main>

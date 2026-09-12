@@ -1,6 +1,6 @@
 ---
-import Menu from '@/components/Menu.astro';
-import '../styles/global.css';
+import Menu from "@/components/Menu.astro";
+import "../styles/global.css";
 
 interface Props {
   title: string;
@@ -11,23 +11,34 @@ const { title } = Astro.props;
 
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="description" content={title} />
-  <meta name="viewport" content="width=device-width" />
-  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
-  <meta name="generator" content={Astro.generator} />
-  <title>{title}</title>
-  <script>
-    (() => {
-      document.documentElement.dataset.system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system';
-    })();
-  </script>
-  <slot name="head" />
-</head>
-<body class="text-gray-800 bg-gray-100 dark:text-gray-100 dark:bg-gray-800 font-light antialiased min-h-screen">
-  <Menu />
-  <slot />
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={title} />
+    <meta name="viewport" content="width=device-width" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href={`${import.meta.env.BASE_URL}/favicon.svg`}
+    />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <script>
+      (() => {
+        document.documentElement.dataset.system = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches
+          ? "dark"
+          : "light";
+        document.documentElement.dataset.theme =
+          localStorage.getItem("theme") || "system";
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body
+    class="text-gray-800 bg-gray-100 dark:text-gray-100 dark:bg-gray-800 font-light antialiased min-h-screen"
+  >
+    <Menu />
+    <slot />
+  </body>
 </html>

@@ -3,10 +3,10 @@ import { b, et, h, m, mr, o, pb, rt, sectors, sm, type Location } from './item-g
 export type Order = 'advanced' | 'sectors' | undefined;
 
 export const orders = [
-  {name: 'Chronological Order', value: undefined},
-  {name: 'Advanced Order', value: 'advanced'},
-  {name: 'Order by Sectors', value: 'sectors'},
-] satisfies {name: string; value: Order}[];
+  { name: 'Chronological Order', value: undefined },
+  { name: 'Advanced Order', value: 'advanced' },
+  { name: 'Order by Sectors', value: 'sectors' },
+] satisfies { name: string; value: Order }[];
 
 export function sort(order?: Order): Location[] {
   switch (order) {

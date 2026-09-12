@@ -9,22 +9,35 @@ interface TLink {
 }
 
 const links: TLink[] = [
-  { href: '/cv', text: 'Curriculum Vitae' },
-  { href: '/games', text: 'Games' },
+  { href: "/cv", text: "Curriculum Vitae" },
+  { href: "/games", text: "Games" },
 ];
 ---
-<nav class="fixed top-0 left-0 z-20 text-gray-800 dark:text-gray-200 print:hidden group">
-  <button type="button" class="block p-2 bg-gray-100 dark:bg-gray-800 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 border border-gray-400">
+
+<nav
+  class="fixed top-0 left-0 z-20 text-gray-800 dark:text-gray-200 print:hidden group"
+>
+  <button
+    type="button"
+    class="block p-2 bg-gray-100 dark:bg-gray-800 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 border border-gray-400"
+  >
     <span
       class="bg-current block w-6 h-6 mask-no-repeat mask-center"
-      style={{maskImage: `url('${burger.src}')`}}
-    />
+      style={{ maskImage: `url('${burger.src}')` }}></span>
     <span class="sr-only">Menu</span>
   </button>
-  <ul class="absolute left-0 top-full max-w-[100vw] bg-gray-100 dark:bg-gray-800 hidden group-has-[button:focus-within]:block hover:block whitespace-nowrap border border-gray-400">
+  <ul
+    class="absolute left-0 top-full max-w-[100vw] bg-gray-100 dark:bg-gray-800 hidden group-has-[button:focus-within]:block hover:block whitespace-nowrap border border-gray-400"
+  >
     <li class="block"><ThemeButton class="block px-4 py-2" /></li>
-    {links.map(({ href, text }) => (
-      <li><Link href={href} class="block px-4 py-2">{text}</Link></li>
-    ))}
+    {
+      links.map(({ href, text }) => (
+        <li>
+          <Link href={href} class="block px-4 py-2">
+            {text}
+          </Link>
+        </li>
+      ))
+    }
   </ul>
 </nav>

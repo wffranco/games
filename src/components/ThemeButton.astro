@@ -1,19 +1,24 @@
 ---
 const { class: c } = Astro.props;
 ---
+
 <button
   aria-label="Theme"
-  class:list={[c, "cursor-pointer",
+  class:list={[
+    c,
+    "cursor-pointer",
     "after:content-['🖥️_System_Mode']",
     "[[data-theme='dark']_&]:after:content-['🌜_Dark_Mode']",
     "[[data-theme='light']_&]:after:content-['🌞_Light_Mode']",
-  ]}
-/>
+  ]}></button>
 <script>
-document.querySelector('button[aria-label="Theme"]')?.addEventListener('click', function() {
-  const current = document.documentElement.dataset.theme;
-  const value = current === 'dark' ? 'light' : (current === 'light' ? 'system' : 'dark');
-  document.documentElement.dataset.theme = value;
-  localStorage.setItem('theme', value);
-});
+  document
+    .querySelector('button[aria-label="Theme"]')
+    ?.addEventListener("click", function () {
+      const current = document.documentElement.dataset.theme;
+      const value =
+        current === "dark" ? "light" : current === "light" ? "system" : "dark";
+      document.documentElement.dataset.theme = value;
+      localStorage.setItem("theme", value);
+    });
 </script>
