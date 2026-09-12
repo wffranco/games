@@ -48,9 +48,10 @@ export const af = {
   af02: { id: 'af02', sector: 'the-commons', x: 37.5, y: 65.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['bTc'] },
   af03: { id: 'af03', sector: 'the-commons', x: 38.5, y: 54.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
   af04: { id: 'af04', sector: 'the-commons', x: 41.5, y: 53.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
-  af05: { id: 'af05', sector: 'the-abandoned-expedition', x: 59.6, y: 47.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
-  af06: { id: 'af06', sector: 'the-abandoned-expedition', x: 61.7, y: 52.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sTp', 'mb03'] },
-  af07: { id: 'af07', sector: 'the-abandoned-expedition', x: 63.6, y: 50.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
+  af05: { id: 'af05', sector: 'the-commons', x: 42.5, y: 49.7, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
+  af06: { id: 'af06', sector: 'the-abandoned-expedition', x: 59.6, y: 47.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
+  af07: { id: 'af07', sector: 'the-abandoned-expedition', x: 61.7, y: 52.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sTp', 'mb03'] },
+  af08: { id: 'af08', sector: 'the-abandoned-expedition', x: 63.6, y: 50.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sLg'] },
   af100: { id: 'af100', sector: 'the-abandoned-expedition', x: 67.7, y: 47.8, name: 'Artifact Fragment', type: 'artifact-fragment', depends: ['sDj'] },
 } satisfies Locations<ArtifactFragment>;
 
