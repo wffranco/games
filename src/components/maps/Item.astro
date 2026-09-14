@@ -1,14 +1,14 @@
 ---
-import type { Location } from "./Map.astro";
+import type { MLocation } from "./Map.astro";
 
-type Depend = [number, Location, DificultyValues | undefined];
-type DificultyKey = keyof typeof dificulties;
-type DificultyValues = (typeof dificulties)[keyof typeof dificulties];
+type Depend = [number, MLocation, DificultyValues | undefined];
+export type DificultyKey = keyof typeof dificulties;
+export type DificultyValues = (typeof dificulties)[keyof typeof dificulties];
 
 interface Props {
   class?: ClassList;
-  location: Location;
-  locations: Location[];
+  location: MLocation;
+  locations: MLocation[];
   pos: number;
 }
 
@@ -17,15 +17,17 @@ const dificulties = {
   n: "normal",
   d: "difficult",
   h: "hard",
+  r: "related",
 } as const;
 
 const { class: c, location, locations, pos } = Astro.props;
-const { id, depends: d, name, sector, status } = location;
+const { id, depends: d, name, sector, status, x, y } = location;
 const depends = !d?.length
   ? []
   : ([d]
       .flat()
       .map((key) => {
+        if (typeof key === "function") key = key();
         const [id, d] = key.split("-") as [string, DificultyKey | ""];
         const l = locations.find((l) => l.id === id);
         if (!l) return;
@@ -54,9 +56,11 @@ const depends = !d?.length
     <input
       x-model="radio"
       id={`r-${pos}`}
+      data-pos={`${x},${y}`}
       data-radio={pos}
       type="radio"
       name="location"
+      popovertarget={id ? `tooltip-${pos}` : undefined}
       value={id}
       class:list={["location", sector]}
       @keyup.space={`$refs.ch${pos}.click()`}
@@ -66,7 +70,7 @@ const depends = !d?.length
     </span>
     {
       depends && (
-        <span class="depends flex ml-auto font-oswald">
+        <span class="depends flex flex-wrap justify-end ml-auto font-oswald">
           {depends.map(([pos, { id, name }, dificulty]) => (
             <label
               for={`r-${pos}`}

@@ -1,0 +1,54 @@
+---
+interface Props {
+  title?: string;
+  class?: ClassList;
+  as?: keyof HTMLElementTagNameMap;
+  placement?: "top" | "bottom" | "left" | "right";
+  [key: string]: any;
+}
+
+const {
+  title,
+  class: cls = "",
+  placement = "bottom",
+  as: Tag = "span",
+  ...rest
+} = Astro.props;
+---
+
+<Tag
+  x-data
+  x-init="
+    const tip = $refs.tip;
+    const activator = $refs.activator || $el.firstElementChild;
+    if (tip && activator && activator !== tip && 'popover' in HTMLElement.prototype) {
+      const show = () => {
+        if (tip.matches(':popover-open')) return;
+        try { tip.showPopover({ source: activator }); } catch { tip.showPopover(); }
+      };
+      const hide = () => tip.hidePopover();
+      activator.addEventListener('mouseenter', show);
+      activator.addEventListener('mouseleave', hide);
+      activator.addEventListener('focus', show);
+      activator.addEventListener('blur', hide);
+      tip.id ||= 'tip-' + Math.random().toString(36).slice(2, 10);
+      activator.setAttribute('aria-describedby', tip.id);
+    }
+  "
+  class:list={cls}
+  {...rest}
+>
+  <slot />
+
+  <div
+    x-ref="tip"
+    popover="hint"
+    role="tooltip"
+    class:list={[
+      "pointer-events-none m-0 font-inherit max-w-xs rounded-lg border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm text-neutral-100 shadow-lg",
+    ]}
+    style={`position-area: ${placement}`}
+  >
+    <slot name="tooltip">{title}</slot>
+  </div>
+</Tag>

@@ -1,9 +1,10 @@
 ---
-import Item from "./Item.astro";
+import Item, { type DificultyKey } from "./Item.astro";
 import Mark from "./Mark.astro";
 
 interface Props {
   class?: ClassList;
+  colors?: ClassList;
   locations: Location[];
   markSize?: number | [number, number];
   scale?: number;
@@ -11,29 +12,61 @@ interface Props {
   translate?: [number, number];
 }
 
-type LocationId = string;
-
+type LocationId = `${string}${"" | `-${DificultyKey}`}`;
 export interface Location<S = string> {
   id: LocationId;
   sector: S;
-  depends?: LocationId | LocationId[];
+  depends?:
+    (LocationId | (() => LocationId)) | (LocationId | (() => LocationId))[];
   name: string;
   status?: "important" | "urgent" | "hard" | "careful";
+  info?: string | string[];
   type?: string;
   x: number;
   y: number;
   avoid?: number[];
+  repeated?: boolean;
 }
 
 export type Locations<S, V extends Location<S>> = Record<string, V>;
 
-const { class: c, locations, markSize, scale, store, translate } = Astro.props;
-const markSizes = Array.isArray(markSize) ? markSize : [markSize ?? 1, markSize ?? 1];
+const {
+  class: c,
+  colors,
+  locations: unmarket,
+  markSize,
+  scale,
+  store,
+  translate,
+} = Astro.props;
+const markSizes = Array.isArray(markSize)
+  ? markSize
+  : [markSize ?? 1, markSize ?? 1];
 const [markX, markY] = markSizes;
+
+export type MLocation = Location & { repeated: boolean };
+const marked = (() => {
+  const repeated = new Set<string>();
+  (() => {
+    const check = new Set<string>();
+    for (const l of unmarket) {
+      const coord = `${l.x},${l.y}`;
+      if (check.has(coord)) repeated.add(coord);
+      else check.add(coord);
+    }
+  })();
+  return (l: Location): MLocation => ({
+    ...l,
+    repeated: repeated.has(`${l.x},${l.y}`),
+  });
+})();
+const locations = unmarket.map(marked);
 ---
 
 <section
   x-data={`{
+    mark: { x: ${markX}, y: ${markY} },
+    store: '${store}',
     checked: [],
     hide: false,
     radio: '',
@@ -43,85 +76,49 @@ const [markX, markY] = markSizes;
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
-    focus: ${JSON.stringify(Object.fromEntries(locations.map(l => [l.id, [l.x, l.y]])))},
-    zoomBy(factor, a = 0.5, b = 0.5) {
-      const next = Math.max(0.1, Math.min(20, this.scale * factor));
-      this.translateX += 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
-      this.translateY += 50 * ((b - 1 + next) / next - (b - 1 + this.scale) / this.scale);
-      this.scale = next;
-    },
-    onWheel(e) {
-      const r = e.currentTarget.getBoundingClientRect();
-      this.zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
-    },
-    zoomIn() { this.zoomBy(1.3); },
-    zoomOut() { this.zoomBy(1 / 1.3); },
+    focus: ${JSON.stringify(Object.fromEntries(locations.map((l) => [l.id, [l.x, l.y]])))},
     centerOn(id) {
       const [x, y] = this.focus[id] || [];
       if (x == null) return;
       const s = Math.max(this.scale, 2.5);
       this.centering = true;
       clearTimeout(this.centerTimer);
-      this.translateX = 50 - 25 / s - x - ${markX} / 2;
-      this.translateY = 50 - 25 / s - y - ${markY} / 2;
+      this.translateX = 50 - 25 / s - x - this.mark.x / 2;
+      this.translateY = 50 - 25 / s - y - this.mark.y / 2;
       this.scale = s;
       this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
     },
-    drag: false,
-    dragMoved: false,
-    dragX: 0,
-    dragY: 0,
-    onDragStart(e) {
-      this.drag = true;
-      this.dragMoved = false;
-      this.dragX = e.clientX;
-      this.dragY = e.clientY;
-      e.preventDefault();
-    },
-    onDragMove(e) {
-      if (!this.drag) return;
-      const r = this.$refs.viewport.getBoundingClientRect();
-      if (Math.abs(e.clientX - this.dragX) + Math.abs(e.clientY - this.dragY) > 4) {
-        this.dragMoved = true;
-      }
-      this.translateX += 50 * (e.clientX - this.dragX) / r.width / this.scale;
-      this.translateY += 50 * (e.clientY - this.dragY) / r.height / this.scale;
-      this.dragX = e.clientX;
-      this.dragY = e.clientY;
-    },
-    onDragEnd() {
-      this.drag = false;
-    },
-    onClickCapture(e) {
-      if (this.dragMoved) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      this.dragMoved = false;
+    cycleCoords(button, step) {
+      const label = button.closest('[data-radio]');
+      const pos = label?.dataset.radio;
+      if (!pos) return;
+      const radios = [...document.querySelectorAll('[data-pos="' + pos + '"]')];
+      const i = radios.findIndex((r) => r.value === this.radio);
+      if (i < 0) return;
+      const next = radios[(i + step + radios.length) % radios.length];
+      if (next) this.radio = next.value;
     },
   }`
     .trim()
     .replace(/\s\s+/g, " ")}
-  x-init={`
-    checked = JSON.parse(localStorage.getItem('${store}-checked') || '[]');
+  x-init="
+    checked = JSON.parse(localStorage.getItem(`${this.store}-checked`) || '[]');
     $watch('checked', value => {
-      localStorage.setItem('${store}-checked', JSON.stringify(value));
+      localStorage.setItem(`${this.store}-checked`, JSON.stringify(value));
       if (hide && checked.includes(radio)) {
         radio = '';
       }
     });
-    radio = localStorage.getItem('${store}-radio') || '';
+    radio = localStorage.getItem(`${this.store}-radio`) || '';
     $watch('radio', value => {
-      localStorage.setItem('${store}-radio', value);
+      localStorage.setItem(`${this.store}-radio`, value);
       if (value) centerOn(value);
       document.querySelector('.location:checked')?.focus();
     });
-    showAll = localStorage.getItem('${store}-show-all') == 'true';
-    $watch('showAll', value => localStorage.setItem('${store}-show-all', value));
+    showAll = localStorage.getItem(`${this.store}-show-all`) == 'true';
+    $watch('showAll', value => localStorage.setItem(`${this.store}-show-all`, value));
     $nextTick(() => { document.querySelector('.location:checked')?.focus(); if (radio) centerOn(radio); });
-  `
-    .trim()
-    .replace(/\s\s+/g, " ")}
+  "
   id="locations"
   class:list={[
     "relative group/locations grid grid-cols-[auto_1fr] h-[95vh]",
@@ -135,16 +132,23 @@ const [markX, markY] = markSizes;
       role="list"
       class:list={[
         "grid",
-        "**:data-title:in-[.careful,.dificult]:text-yellow-300",
-        "**:data-title:in-[.easy]:text-sky-400",
-        "**:data-title:in-[.hard]:text-red-500",
-        "**:data-title:in-[.important]:text-green-300",
-        "**:data-title:in-[.normal]:text-gray-300",
-        "**:data-title:in-[.urgent]:font-bold",
+        "**:[.urgent_&]:data-title:font-bold",
+        colors ?? [
+          "**:[:where(.careful,.dificult)_&]:data-title:text-yellow-300",
+          "**:[.easy_&]:data-title:text-sky-400",
+          "**:[.hard_&]:data-title:text-red-500",
+          "**:[.important_&]:data-title:text-green-300",
+          "**:[.normal_&]:data-title:text-gray-300",
+          "[&_.depends>.easy]:text-green-500",
+          "[&_.depends>.normal]:text-blue-500",
+          "[&_.depends>.difficult]:text-yellow-500",
+          "[&_.depends>.hard]:text-red-500",
+          "[&_.depends>.related]:text-cyan-500",
+        ],
       ]}
     >
       <li
-        class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-10"
+        class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-30"
       >
         <input x-model="showAll" class="all" type="checkbox" title="Show All" />
         <button
@@ -196,13 +200,59 @@ const [markX, markY] = markSizes;
     </ul>
   </nav>
   <div
+    x-data="{
+      drag: false,
+      dragMoved: false,
+      dragX: 0,
+      dragY: 0,
+      onClickCapture(e) {
+        if (this.dragMoved) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        this.dragMoved = false;
+      },
+      onDragStart(e) {
+        this.drag = true;
+        this.dragMoved = false;
+        this.dragX = e.clientX;
+        this.dragY = e.clientY;
+        e.preventDefault();
+      },
+      onDragMove(e) {
+        if (!this.drag) return;
+        const r = this.$refs.viewport.getBoundingClientRect();
+        if (Math.abs(e.clientX - this.dragX) + Math.abs(e.clientY - this.dragY) > 4) {
+          this.dragMoved = true;
+        }
+        this.translateX += 50 * (e.clientX - this.dragX) / r.width / this.scale;
+        this.translateY += 50 * (e.clientY - this.dragY) / r.height / this.scale;
+        this.dragX = e.clientX;
+        this.dragY = e.clientY;
+      },
+      onDragEnd() {
+        this.drag = false;
+      },
+      onWheel(e) {
+        const r = e.currentTarget.getBoundingClientRect();
+        this.zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+      },
+      zoomBy(factor, a = 0.5, b = 0.5) {
+        const next = Math.max(0.1, Math.min(20, this.scale * factor));
+        this.translateX += 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
+        this.translateY += 50 * ((b - 1 + next) / next - (b - 1 + this.scale) / this.scale);
+        this.scale = next;
+      },
+      zoomIn() { this.zoomBy(1.3); },
+      zoomOut() { this.zoomBy(1 / 1.3); },
+    }"
     x-ref="viewport"
     class="relative h-full aspect-square border overflow-hidden select-none cursor-grab active:cursor-grabbing bg-black"
-    @wheel.prevent="onWheel($event)"
-    @mousedown="onDragStart($event)"
-    @mousemove.window="onDragMove($event)"
+    @wheel.prevent="onWheel"
+    @mousedown="onDragStart"
+    @mousemove.window="onDragMove"
     @mouseup.window="onDragEnd"
-    @click.capture="onClickCapture($event)"
+    @click.capture="onClickCapture"
   >
     <div class="absolute top-2 right-2 z-30 flex gap-2">
       <button
@@ -223,8 +273,8 @@ const [markX, markY] = markSizes;
       </button>
     </div>
     <div
-id="map-container"
-      class="absolute top-0 left-0 h-[200%] w-[200%] border border-red-300"
+      id="map-container"
+      class="absolute top-0 left-0 h-[200%] w-[200%]"
       :class="{'transition-transform duration-300 ease-out': centering}"
       :style="{transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`}"
     >

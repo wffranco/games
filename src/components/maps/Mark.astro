@@ -1,43 +1,73 @@
 ---
-import type { Location } from "./Map.astro";
+import { wrap } from "@/tools/arrays";
+import ArrowButton from "./ArrowButton.astro";
+import type { MLocation } from "./Map.astro";
 
 interface Props {
   class?: ClassList;
-  location: Location;
+  location: MLocation;
   pos: number;
   size?: number | [number, number];
 }
 
 const { class: c, location, pos, size, ...rest } = Astro.props;
-const { id, name, type, x, y } = location;
+const { id, info, name, type, x, y, repeated } = location;
 
-const sx = Array.isArray(size) ? size[0] : size;
-const sy = Array.isArray(size) ? size[1] : size;
+const sx = Array.isArray(size) ? size[0] : (size ?? 1);
+const sy = Array.isArray(size) ? size[1] : (size ?? 1);
 ---
 
 <label
   for={`r-${pos}`}
-  class:list={["absolute cursor-pointer", c, type]}
+  class:list={[
+    "absolute cursor-pointer",
+    "[&.done:not(.active)]:z-10 z-20 [&.active]:z-40",
+    c,
+    type,
+  ]}
   :class={`{done: checked.includes('${id}'), active: radio === '${id}'}`}
+  data-radio={`${x},${y}`}
   style={{
     left: `${x}%`,
     top: `${y}%`,
-    width: `${sx || 1}%`,
-    height: `${sy || 1}%`,
+    width: `${sx}%`,
+    height: `${sy}%`,
   }}
   title={`${id} - ${name}`}
   {...rest}
   @dblclick={`$refs.ch${pos}.click()`}
 >
-  <i class="hidden [:where(#map.all,label.active)_&]:block">
+  <i class="hidden [:where(#map.all,label.active)_&]:block relative h-full">
     <i
       class:list={[
-        "hidden",
-        "[label.active_&]:block",
-        "mask-[url('/games/imgs/arrow-down.svg')]",
-        "absolute left-[15%] w-[70%] aspect-square bg-current bottom-full z-10 animate-bounce",
-        "text-red-600 pointer-events-none mask-no-repeat mask-center",
-      ]}></i>
+        "absolute hidden [label.active_&]:flex items-end",
+        "left-[50%] bottom-full -translate-x-1/2 z-30",
+        `h-full`,
+        { repeated },
+      ]}
+    >
+      <button
+        type="button"
+        class="hidden [.repeated>&]:block h-3/4"
+        @click.prevent="cycleCoords($event.currentTarget, -1)"
+      >
+        <ArrowButton orientacion="left" class="aspect-square h-full" />
+      </button>
+      <i
+        class:list={[
+          "block",
+          "bg-current mask-[url('/games/imgs/arrow-down.svg')] mask-no-repeat mask-center",
+          `aspect-square h-3/4 animate-bounce`,
+          "text-red-600 pointer-events-none",
+        ]}></i>
+      <button
+        type="button"
+        class="hidden [.repeated>&]:block h-3/4"
+        @click.prevent="cycleCoords($event.currentTarget, 1)"
+      >
+        <ArrowButton orientacion="right" class="aspect-square h-full" />
+      </button>
+    </i>
     <i
       class:list={[
         "hidden",
@@ -52,8 +82,32 @@ const sy = Array.isArray(size) ? size[1] : size;
         "absolute w-full aspect-square bg-current top-0 left-0",
         "text-yellow-300 hover:text-green-500",
         "[label.done_&]:text-indigo-600 [label.done_&]:hover:text-green-700",
-      ]}></i>
+      ]}
+    >
+    </i>
     <i class={`location ${type} absolute w-full aspect-square top-0 left-0`}>
     </i>
+    {
+      info && (
+        <span
+          class:list={[
+            "info",
+            "absolute top-full text-[7px] z-30",
+            "bg-gray-800 hover:bg-gray-800 text-white text-center p-1 rounded mt-1",
+            "left-[50%] translate-x-[-50%]",
+            "hidden [:where(label.active)_&]:block",
+            "pointer-events-none animate-pulse",
+          ]}
+        >
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-gray-800" />
+          {wrap(info).map((i, k) => (
+            <>
+              {k > 0 && <br />}
+              <span>{i}</span>
+            </>
+          ))}
+        </span>
+      )
+    }
   </i>
 </label>
