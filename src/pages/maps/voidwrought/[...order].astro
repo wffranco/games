@@ -75,17 +75,38 @@ const name = (sector: string) =>
             .location {
               @apply border-3 border-transparent bg-center bg-contain bg-no-repeat translate-x-[0.5px] z-[2];
               /* Image Items */
+              &.ancient-cipher {
+                background-image: url("/games/imgs/voidwrought/ancient-cipher.png");
+              }
               &.artifact-fragment {
                 background-image: url("/games/imgs/voidwrought/artifact-fragment.png");
+              }
+              &.cristal-switch {
+                background-image: url("/games/imgs/voidwrought/cristal-switch.png");
               }
               &.devotee {
                 background-image: url("/games/imgs/voidwrought/devotee.png");
               }
+              &.divine-remnant {
+                background-image: url("/games/imgs/voidwrought/divine-remnant.png");
+              }
               &.dormant-salt-receptable {
                 background-image: url("/games/imgs/voidwrought/dormant-salt-receptacle.png");
               }
+              &.envoy {
+                background-image: url("/games/imgs/voidwrought/envoy.png");
+              }
+              &.icor {
+                background-image: url("/games/imgs/voidwrought/icor.png");
+              }
               &.metal-ingot {
                 background-image: url("/games/imgs/voidwrought/metal-ingot.png");
+              }
+              &.monolith {
+                background-image: url("/games/imgs/voidwrought/monoliths.png");
+              }
+              &.progenitor-flesh {
+                background-image: url("/games/imgs/voidwrought/progenitor-flesh.png");
               }
               &.relic {
                 background-image: url("/games/imgs/voidwrought/relic.png");
@@ -99,6 +120,12 @@ const name = (sector: string) =>
               &.soul {
                 background-image: url("/games/imgs/voidwrought/soul.png");
               }
+              &.shortcut {
+                background-image: url("/games/imgs/voidwrought/teleport.png");
+              }
+            }
+            .info {
+              @apply w-[6rem];
             }
           }
           h2 {
