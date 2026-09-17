@@ -56,14 +56,15 @@ const depends = !d?.length
     <input
       x-model="radio"
       id={`r-${pos}`}
-      data-pos={`${x},${y}`}
-      data-radio={pos}
+      data-coord={`${x},${y}`}
       type="radio"
       name="location"
       popovertarget={id ? `tooltip-${pos}` : undefined}
       value={id}
       class:list={["location", sector]}
       @keyup.space={`$refs.ch${pos}.click()`}
+      @keydown.arrow-left.shift.prevent="cycleCoords($event.currentTarget, -1)"
+      @keydown.arrow-right.shift.prevent="cycleCoords($event.currentTarget, 1)"
     />
     <span data-title>
       {id} - {name}

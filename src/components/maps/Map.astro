@@ -89,10 +89,11 @@ const locations = unmarket.map(marked);
       this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
     },
     cycleCoords(button, step) {
-      const label = button.closest('[data-radio]');
-      const pos = label?.dataset.radio;
-      if (!pos) return;
-      const radios = [...document.querySelectorAll('[data-pos="' + pos + '"]')];
+      const label = button.closest('[data-coord]');
+      const coord = label?.dataset.coord;
+      if (!coord) return;
+      const radios = [...document.querySelectorAll('input[data-coord="' + coord + '"]')];
+      if (radios.length < 2) return;
       const i = radios.findIndex((r) => r.value === this.radio);
       if (i < 0) return;
       const next = radios[(i + step + radios.length) % radios.length];
