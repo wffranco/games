@@ -187,9 +187,9 @@ const locations = unmarket.map(marked);
       </li>
       {
         locations.map((location, key) => (
-          <li class="group/li relative has-[.done:checked]/li:bg-green-950">
+          <li class="relative [li:has(.hide:checked)~&:has(.done:checked)]:hidden has-[.done:checked]:bg-green-950">
             <div class="">
-              <div class="absolute inset-0 pointer-events-none z-0 group-hover/li:bg-black/20 group-[:has(.location:checked)]/li:bg-white/30 group-[:has(.location:checked)]/li:animate-pulse" />
+              <div class="absolute inset-0 pointer-events-none z-0 [li:hover_&]:bg-black/20 [li:has(.location:checked)_&]:bg-white/30 [li:has(.location:checked)~&]:animate-pulse" />
               <div class="flex gap-2 px-2 py-1 items-center">
                 <div class="w-8 text-right">{key + 1}.</div>
                 <Item {...{ location, locations }} pos={key + 1} />

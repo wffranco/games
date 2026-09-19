@@ -37,7 +37,9 @@ const sy = Array.isArray(size) ? size[1] : (size ?? 1);
   {...rest}
   @dblclick={`$refs.ch${pos}.click()`}
 >
-  <i class="hidden [:where(#map.all,label.active)_&]:block relative h-full">
+  <i
+    class="hidden [:where(#map.all,label.active)_&]:block [section:has(.hide:checked)_label.done_&]:hidden relative h-full"
+  >
     <i
       class:list={[
         "absolute hidden [label.active_&]:flex items-end",
