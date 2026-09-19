@@ -22,6 +22,7 @@ const sy = Array.isArray(size) ? size[1] : (size ?? 1);
   class:list={[
     "absolute cursor-pointer",
     "[&.done:not(.active)]:z-10 z-20 [&.active]:z-40",
+    { repeated },
     c,
     type,
   ]}
@@ -40,36 +41,28 @@ const sy = Array.isArray(size) ? size[1] : (size ?? 1);
   <i
     class="hidden [:where(#map.all,label.active)_&]:block [section:has(.hide:checked)_label.done_&]:hidden relative h-full"
   >
+    <button
+      type="button"
+      class="absolute hidden [.active.repeated_&]:block h-3/4 bottom-full right-full cursor-pointer"
+      @click.prevent="cycleCoords($event.currentTarget, -1)"
+    >
+      <ArrowButton orientacion="left" class="aspect-square h-full" />
+    </button>
     <i
       class:list={[
-        "absolute hidden [label.active_&]:flex items-end",
+        "absolute hidden [label.active_&]:block",
         "left-[50%] bottom-full -translate-x-1/2 z-30",
-        `h-full`,
-        { repeated },
-      ]}
+        "bg-current mask-[url('/games/imgs/arrow-down.svg')] mask-no-repeat mask-center",
+        `aspect-square h-3/4 animate-bounce`,
+        "text-red-600 pointer-events-none",
+      ]}></i>
+    <button
+      type="button"
+      class="absolute hidden [.active.repeated_&]:block h-3/4 bottom-full left-full cursor-pointer"
+      @click.prevent="cycleCoords($event.currentTarget, 1)"
     >
-      <button
-        type="button"
-        class="hidden [.repeated>&]:block h-3/4"
-        @click.prevent="cycleCoords($event.currentTarget, -1)"
-      >
-        <ArrowButton orientacion="left" class="aspect-square h-full" />
-      </button>
-      <i
-        class:list={[
-          "block",
-          "bg-current mask-[url('/games/imgs/arrow-down.svg')] mask-no-repeat mask-center",
-          `aspect-square h-3/4 animate-bounce`,
-          "text-red-600 pointer-events-none",
-        ]}></i>
-      <button
-        type="button"
-        class="hidden [.repeated>&]:block h-3/4"
-        @click.prevent="cycleCoords($event.currentTarget, 1)"
-      >
-        <ArrowButton orientacion="right" class="aspect-square h-full" />
-      </button>
-    </i>
+      <ArrowButton orientacion="right" class="aspect-square h-full" />
+    </button>
     <i
       class:list={[
         "hidden",
