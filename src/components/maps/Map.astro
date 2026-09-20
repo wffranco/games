@@ -76,15 +76,52 @@ const locations = unmarket.map(marked);
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
+    defaultScale: ${scale ?? 1},
+    defaultTranslateX: ${translate?.[0] ?? 0},
+    defaultTranslateY: ${translate?.[1] ?? 0},
     focus: ${JSON.stringify(Object.fromEntries(locations.map((l) => [l.id, [l.x, l.y]])))},
-    centerOn(id) {
-      const [x, y] = this.focus[id] || [];
-      if (x == null) return;
-      const s = Math.max(this.scale, 2.5);
+    resetView() {
       this.centering = true;
       clearTimeout(this.centerTimer);
-      this.translateX = 50 - 25 / s - x - this.mark.x / 2;
-      this.translateY = 50 - 25 / s - y - this.mark.y / 2;
+      this.scale = this.defaultScale;
+      this.translateX = this.defaultTranslateX;
+      this.translateY = this.defaultTranslateY;
+      this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
+    },
+    centerOn(id) {
+      const viewport = document.getElementById("map-container")?.parentElement;
+      const target = viewport?.querySelector('[data-value="' + id + '"]');
+      if (!viewport || !target) {
+        const [x, y] = this.focus[id] || [];
+        if (x == null) return;
+        const s = Math.max(this.scale, 2.5);
+        this.translateX = 50 - 25 / s - x - this.mark.x / 2;
+        this.translateY = 50 - 25 / s - y - this.mark.y / 2;
+        this.scale = s;
+        return;
+      }
+      const vp = viewport.getBoundingClientRect();
+      const W = vp.width;
+      const H = vp.height;
+      const C = { x: vp.left + W / 2, y: vp.top + H / 2 };
+      const O = { x: vp.left + W, y: vp.top + H };
+      const r = target.getBoundingClientRect();
+      const Q0 = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      const s0 = this.scale;
+      const t0 = { x: 2 * W * this.translateX / 100, y: 2 * H * this.translateY / 100 };
+      const p = {
+        x: (Q0.x - (1 - s0) * O.x - s0 * t0.x) / s0,
+        y: (Q0.y - (1 - s0) * O.y - s0 * t0.y) / s0,
+      };
+      const s = Math.max(this.scale, 2.5);
+      const t = {
+        x: (C.x - (1 - s) * O.x) / s - p.x,
+        y: (C.y - (1 - s) * O.y) / s - p.y,
+      };
+      this.centering = true;
+      clearTimeout(this.centerTimer);
+      this.translateX = t.x * 100 / (2 * W);
+      this.translateY = t.y * 100 / (2 * H);
       this.scale = s;
       this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
     },
@@ -114,6 +151,7 @@ const locations = unmarket.map(marked);
     $watch('radio', value => {
       localStorage.setItem(`${this.store}-radio`, value);
       if (value) centerOn(value);
+      else resetView();
       document.querySelector('.location:checked')?.focus();
     });
     showAll = localStorage.getItem(`${this.store}-show-all`) == 'true';
@@ -148,34 +186,42 @@ const locations = unmarket.map(marked);
         ],
       ]}
     >
-      <li
-        class="sticky inset-y top-0 flex justify-evenly gap-2 bg-slate-900 p-2 z-30"
-      >
-        <input x-model="showAll" class="all" type="checkbox" title="Show All" />
-        <button
-          class="px-2 py-1 border text-xs bg-slate-800"
-          @click="checked = []"
-        >
-          Clear checboxes
-        </button>
-        <button
-          class="px-2 py-1 border text-xs bg-slate-800"
-          @click="radio = '';"
-        >
-          Clear radio
-        </button>
-        <button
-          class="px-2 py-1 border text-xs bg-slate-800"
-          @click="checked = []; radio = '';"
-        >
-          Clear all
-        </button>
-        <input
-          x-model="hide"
-          type="checkbox"
-          class="hide"
-          title="Hide completed"
-        />
+      <li class="sticky top-0 z-30">
+        <div class="grid">
+          <slot name="header" />
+          <div class="flex justify-evenly gap-2 bg-slate-900 p-2">
+            <input
+              x-model="showAll"
+              class="all"
+              type="checkbox"
+              title="Show All"
+            />
+            <button
+              class="px-2 py-1 border text-xs bg-slate-800"
+              @click="checked = []"
+            >
+              Clear checked
+            </button>
+            <button
+              class="px-2 py-1 border text-xs bg-slate-800"
+              @click="radio = '';"
+            >
+              Clear radio
+            </button>
+            <button
+              class="px-2 py-1 border text-xs bg-slate-800"
+              @click="checked = []; radio = '';"
+            >
+              Clear all
+            </button>
+            <input
+              x-model="hide"
+              type="checkbox"
+              class="hide"
+              title="Hide completed"
+            />
+          </div>
+        </div>
       </li>
       <li class="px-2 py-1 has-[.all:checked]/li:bg-sky-950">
         <div class="flex">
@@ -281,7 +327,7 @@ const locations = unmarket.map(marked);
     >
       <div
         id="map"
-        class="absolute w-full h-full bg-contain bg-no-repeat bg-center"
+        class="absolute inset-0 bg-contain bg-no-repeat bg-center"
         :class="{all: showAll}"
       >
         <slot name="map" />

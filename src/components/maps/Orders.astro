@@ -1,0 +1,96 @@
+---
+export interface OrderOption {
+  href: string;
+  name: string;
+  value: string;
+}
+
+interface Props {
+  class?: ClassList;
+  placeholder?: string;
+  options: OrderOption[];
+  value?: string;
+}
+
+const { options, value, placeholder = "Order by...", class: c } = Astro.props;
+
+const initial = Math.max(
+  0,
+  options.findIndex((o) => o.value === value),
+);
+const escaped = (value: unknown) =>
+  JSON.stringify(value).replace(/</g, "\\u003c");
+---
+
+<div
+  class:list={["relative", c]}
+  x-data={`{
+    open: false,
+    index: ${initial},
+    value: ${escaped(value || "")},
+    options: ${escaped(options)},
+    placeholder: ${escaped(placeholder || "")},
+    get current() {
+      const i = this.options.findIndex((o) => o.value === this.value);
+      return i >= 0 ? i : -1;
+    },
+    openMenu() {
+      if (!this.options.length) return;
+      this.open = true;
+      this.index = this.current >= 0 ? this.current : 0;
+    },
+    toggle() { this.open ? (this.open = false) : this.openMenu(); },
+    move(step) {
+      const len = this.options.length;
+      if (!len) return;
+      if (!this.open) { this.openMenu(); return; }
+      this.index = (this.index + step + len) % len;
+    },
+    select(i) {
+      const option = this.options[i];
+      if (option && option.href) window.location.href = option.href;
+    },
+  }`
+    .trim()
+    .replace(/\s\s+/g, " ")}
+  @click.outside="open = false"
+>
+  <button
+    type="button"
+    role="combobox"
+    aria-haspopup="listbox"
+    :aria-expanded="open"
+    :aria-activedescendant="open && index >= 0 ? 'dropdown-option-' + index : null"
+    class="flex w-full items-center justify-between gap-2 border rounded px-2 py-1 bg-white/10 hover:bg-white/20 cursor-pointer"
+    @click="toggle()"
+    @keydown.down.prevent="move(1)"
+    @keydown.up.prevent="move(-1)"
+    @keydown.enter.prevent="open ? select(index) : openMenu()"
+    @keydown.space.prevent="open ? select(index) : openMenu()"
+    @keydown.escape.prevent="open = false"
+    @keydown.home.prevent="index = 0"
+    @keydown.end.prevent="index = options.length - 1"
+  >
+    <span x-text="current >= 0 ? options[current].name : placeholder"></span>
+    <span class="text-xs" aria-hidden="true">▾</span>
+  </button>
+  <ul
+    x-show="open"
+    x-transition
+    role="listbox"
+    class="absolute top-full right-0 left-0 z-40 mt-1 overflow-hidden rounded border bg-slate-900 shadow-lg"
+  >
+    <template x-for="(option, i) in options" :key="option.value">
+      <li
+        :id="'dropdown-option-' + i"
+        role="option"
+        :aria-selected="option.value === value"
+        class="[&:not(:last-child)]:border-b border-slate-700"
+        :class="i === index ? 'bg-white/20' : ''"
+        @mousemove="index = i"
+      >
+        <a :href="option.href" class="block px-2 py-1" x-text="option.name"></a>
+      </li>
+    </template>
+  </ul>
+</div>

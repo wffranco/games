@@ -1,13 +1,16 @@
 import { ac, af, b, c, d, dr, dsr, e, i, je, mb, mi, mo, o, ov, q, r, s, sectors, so, sv, u, type Location } from './item-groups';
 
-export type Order = 'advanced' | 'sectors' | 'type' | 'chrono' | undefined;
+export type Order = 'advanced' | 'sectors' | 'type' | 'normal' | undefined;
+
+const link = (value?: Order) =>
+  ["/games/maps/voidwrought", value].filter(Boolean).join("/");
 
 export const orders = [
-  { name: 'Chronological Order', value: undefined },
-  { name: 'Advanced Order', value: 'advanced' },
-  { name: 'Order by Sectors', value: 'sectors' },
-  { name: 'Order by Type', value: 'type' },
-] satisfies { name: string; value: Order }[];
+  { name: 'Advanced Order', value: 'advanced', href: link('advanced') },
+  { name: 'Normal Order', value: 'normal', href: link('normal') },
+  { name: 'Order by Sectors', value: 'sectors', href: link('sectors') },
+  { name: 'Order by Type', value: 'type', href: link('type') },
+] satisfies { name: string; value: Order; href: string }[];
 
 export function sortedBy(order?: Order): Location[] {
   switch (order) {
