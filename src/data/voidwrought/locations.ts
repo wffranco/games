@@ -2,8 +2,8 @@ import { ac, af, b, c, d, dr, dsr, e, i, je, mb, mi, mo, o, ov, q, r, s, sectors
 
 export type Order = 'advanced' | 'sectors' | 'type' | 'normal' | undefined;
 
-const link = (value?: Order) =>
-  ["/games/maps/voidwrought", value].filter(Boolean).join("/");
+const path = '/games/maps/voidwrought';
+const link = (value?: Order) => [path, value].filter(Boolean).join("/");
 
 export const orders = [
   { name: 'Advanced Order', value: 'advanced', href: link('advanced') },

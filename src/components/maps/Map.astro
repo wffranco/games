@@ -65,14 +65,40 @@ const locations = unmarket.map(marked);
 
 <section
   x-data={`{
+    cache: {},
     mark: { x: ${markX}, y: ${markY} },
     store: '${store}',
-    checked: [],
-    hide: false,
-    radio: '',
-    showAll: false,
-    centering: false,
-    centerTimer: 0,
+    get checked() { return this.cache?.checked ?? []; },
+    set checked(value) {
+      this.setCached('checked', value);
+      if (this.hide && this.checked.includes(this.radio)) {
+        const r = document.querySelector('li:has(input.location[value=' + this.radio + '])~li:not(:has(.done:checked)) input.location');
+        if (r) {
+          this.radio = r.value;
+          r.focus();
+        }
+      }
+    },
+    get hide() { return this.cache?.hide ?? false; },
+    set hide(value) {
+      this.setCached('hide', value);
+    },
+    get radio() { return this.cache?.radio ?? ''; },
+    set radio(value) {
+      this.setCached('radio', value);
+      if (value) this.centerOn(value);
+      else this.resetView();
+      this.focusRadio();
+    },
+    get showAll() { return this.cache?.showAll ?? false; },
+    set showAll(value) {
+      this.setCached('showAll', value);
+    },
+    transition: false,
+    drag: false,
+    dragMoved: false,
+    dragX: 0,
+    dragY: 0,
     scale: ${scale ?? 1},
     translateX: ${translate?.[0] ?? 0},
     translateY: ${translate?.[1] ?? 0},
@@ -80,24 +106,27 @@ const locations = unmarket.map(marked);
     defaultTranslateX: ${translate?.[0] ?? 0},
     defaultTranslateY: ${translate?.[1] ?? 0},
     focus: ${JSON.stringify(Object.fromEntries(locations.map((l) => [l.id, [l.x, l.y]])))},
+    focusRadio(id) {
+      const r = document.querySelector('li input.location[value="' + (id ?? this.radio) + '"]');
+      if (r) r.focus();
+    },
     resetView() {
-      this.centering = true;
-      clearTimeout(this.centerTimer);
       this.scale = this.defaultScale;
       this.translateX = this.defaultTranslateX;
       this.translateY = this.defaultTranslateY;
-      this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
     },
     centerOn(id) {
-      const viewport = document.getElementById("map-container")?.parentElement;
+      const viewport = this.$refs.viewport;
       const target = viewport?.querySelector('[data-value="' + id + '"]');
       if (!viewport || !target) {
         const [x, y] = this.focus[id] || [];
         if (x == null) return;
-        const s = Math.max(this.scale, 2.5);
-        this.translateX = 50 - 25 / s - x - this.mark.x / 2;
-        this.translateY = 50 - 25 / s - y - this.mark.y / 2;
-        this.scale = s;
+        const tscale = Math.max(this.scale, 2.5);
+        this.translateTo(
+          50 - 25 / tscale - x - this.mark.x / 2,
+          50 - 25 / tscale - y - this.mark.y / 2,
+          tscale,
+        );
         return;
       }
       const vp = viewport.getBoundingClientRect();
@@ -118,12 +147,14 @@ const locations = unmarket.map(marked);
         x: (C.x - (1 - s) * O.x) / s - p.x,
         y: (C.y - (1 - s) * O.y) / s - p.y,
       };
-      this.centering = true;
-      clearTimeout(this.centerTimer);
-      this.translateX = t.x * 100 / (2 * W);
-      this.translateY = t.y * 100 / (2 * H);
+      this.translateTo(t.x * 100 / (2 * W), t.y * 100 / (2 * H), s);
+    },
+    translateTo(x, y, s) {
+      if (x === this.translateX && y === this.translateY && s === this.scale) return;
+      this.transition = true;
+      this.translateX = x;
+      this.translateY = y;
       this.scale = s;
-      this.centerTimer = setTimeout(() => { this.centering = false; }, 300);
     },
     cycleCoords(button, step) {
       const label = button.closest('[data-coord]');
@@ -136,33 +167,81 @@ const locations = unmarket.map(marked);
       const next = radios[(i + step + radios.length) % radios.length];
       if (next) this.radio = next.value;
     },
+    exactKey(e, m) {
+      const k = {alt: false, ctrl: false, meta: false, shift: false, ...m};
+      return e.metaKey === k.meta && e.ctrlKey === k.ctrl && e.altKey === k.alt && e.shiftKey === k.shift;
+    },
+    onClickCapture(e) {
+      if (this.dragMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.dragMoved = false;
+    },
+    onDragStart(e) {
+      this.drag = true;
+      this.dragMoved = false;
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+      e.preventDefault();
+    },
+    onDragMove(e) {
+      if (!this.drag) return;
+      const r = this.$refs.viewport.getBoundingClientRect();
+      if (Math.abs(e.clientX - this.dragX) + Math.abs(e.clientY - this.dragY) > 4) {
+        this.dragMoved = true;
+      }
+      this.translateX += 50 * (e.clientX - this.dragX) / r.width / this.scale;
+      this.translateY += 50 * (e.clientY - this.dragY) / r.height / this.scale;
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+    },
+    onDragEnd() {
+      this.drag = false;
+    },
+    onWheel(e) {
+      const r = e.currentTarget.getBoundingClientRect();
+      this.zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    },
+    zoomBy(factor, a = 0.5, b = 0.5) {
+      const next = Math.max(0.1, Math.min(20, this.scale * factor));
+      const tx = this.translateX + 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
+      const ty = this.translateY + 50 * ((b - 1 + next) / next - (b - 1 + this.scale) / this.scale);
+      this.translateTo(tx, ty, next);
+    },
+    zoomIn() { this.zoomBy(1.3); },
+    zoomOut() { this.zoomBy(1 / 1.3); },
+    loadCache() {
+      this.cache = JSON.parse(localStorage.getItem('map-' + this.store)) ?? {};
+    },
+    saveCache() {
+      localStorage.setItem('map-' + this.store, JSON.stringify(this.cache));
+    },
+    setCached(key, value) {
+      this.cache[key] = value;
+      this.saveCache();
+    },
   }`
     .trim()
     .replace(/\s\s+/g, " ")}
   x-init="
-    checked = JSON.parse(localStorage.getItem(`${this.store}-checked`) || '[]');
-    $watch('checked', value => {
-      localStorage.setItem(`${this.store}-checked`, JSON.stringify(value));
-      if (hide && checked.includes(radio)) {
-        radio = '';
-      }
-    });
-    radio = localStorage.getItem(`${this.store}-radio`) || '';
-    $watch('radio', value => {
-      localStorage.setItem(`${this.store}-radio`, value);
-      if (value) centerOn(value);
-      else resetView();
+    loadCache();
+    $nextTick(() => {
       document.querySelector('.location:checked')?.focus();
+      if (radio) centerOn(radio);
     });
-    showAll = localStorage.getItem(`${this.store}-show-all`) == 'true';
-    $watch('showAll', value => localStorage.setItem(`${this.store}-show-all`, value));
-    $nextTick(() => { document.querySelector('.location:checked')?.focus(); if (radio) centerOn(radio); });
   "
   id="locations"
   class:list={[
     "relative group/locations grid grid-cols-[auto_1fr] h-[95vh]",
     c,
   ]}
+  @keydown.window.a="if (exactKey($event)) showAll=!showAll;"
+  @keydown.window.c="if (exactKey($event)) hide=!hide;"
+  @keydown.window.f="if (exactKey($event)) focusRadio();"
+  @keydown.window.h="if (exactKey($event)) hide=!hide;"
+  @keydown.window.m="if (exactKey($event)) radio = '';"
+  @keydown.window.r="if (exactKey($event, {shift: true})) checked=[];"
 >
   <nav
     class="relative h-full overflow-y-scroll border text-gray-200 bg-blue-950 w-70 rounded-l text-sm"
@@ -208,12 +287,6 @@ const locations = unmarket.map(marked);
             >
               Clear radio
             </button>
-            <button
-              class="px-2 py-1 border text-xs bg-slate-800"
-              @click="checked = []; radio = '';"
-            >
-              Clear all
-            </button>
             <input
               x-model="hide"
               type="checkbox"
@@ -234,12 +307,10 @@ const locations = unmarket.map(marked);
       {
         locations.map((location, key) => (
           <li class="relative [li:has(.hide:checked)~&:has(.done:checked)]:hidden has-[.done:checked]:bg-green-950">
-            <div class="">
-              <div class="absolute inset-0 pointer-events-none z-0 [li:hover_&]:bg-black/20 [li:has(.location:checked)_&]:bg-white/30 [li:has(.location:checked)~&]:animate-pulse" />
-              <div class="flex gap-2 px-2 py-1 items-center">
-                <div class="w-8 text-right">{key + 1}.</div>
-                <Item {...{ location, locations }} pos={key + 1} />
-              </div>
+            <div class="absolute inset-0 pointer-events-none [li:hover_&]:bg-black/20 [li:has(.location:checked)_&]:bg-white/30 [li:has(.location:checked)_&]:animate-pulse" />
+            <div class="flex gap-2 px-2 py-1 items-center">
+              <div class="w-8 text-right">{key + 1}.</div>
+              <Item {...{ location, locations }} pos={key + 1} />
             </div>
           </li>
         ))
@@ -247,52 +318,6 @@ const locations = unmarket.map(marked);
     </ul>
   </nav>
   <div
-    x-data="{
-      drag: false,
-      dragMoved: false,
-      dragX: 0,
-      dragY: 0,
-      onClickCapture(e) {
-        if (this.dragMoved) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        this.dragMoved = false;
-      },
-      onDragStart(e) {
-        this.drag = true;
-        this.dragMoved = false;
-        this.dragX = e.clientX;
-        this.dragY = e.clientY;
-        e.preventDefault();
-      },
-      onDragMove(e) {
-        if (!this.drag) return;
-        const r = this.$refs.viewport.getBoundingClientRect();
-        if (Math.abs(e.clientX - this.dragX) + Math.abs(e.clientY - this.dragY) > 4) {
-          this.dragMoved = true;
-        }
-        this.translateX += 50 * (e.clientX - this.dragX) / r.width / this.scale;
-        this.translateY += 50 * (e.clientY - this.dragY) / r.height / this.scale;
-        this.dragX = e.clientX;
-        this.dragY = e.clientY;
-      },
-      onDragEnd() {
-        this.drag = false;
-      },
-      onWheel(e) {
-        const r = e.currentTarget.getBoundingClientRect();
-        this.zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
-      },
-      zoomBy(factor, a = 0.5, b = 0.5) {
-        const next = Math.max(0.1, Math.min(20, this.scale * factor));
-        this.translateX += 50 * ((a - 1 + next) / next - (a - 1 + this.scale) / this.scale);
-        this.translateY += 50 * ((b - 1 + next) / next - (b - 1 + this.scale) / this.scale);
-        this.scale = next;
-      },
-      zoomIn() { this.zoomBy(1.3); },
-      zoomOut() { this.zoomBy(1 / 1.3); },
-    }"
     x-ref="viewport"
     class="relative h-full aspect-square border overflow-hidden select-none cursor-grab active:cursor-grabbing bg-black"
     @wheel.prevent="onWheel"
@@ -322,8 +347,9 @@ const locations = unmarket.map(marked);
     <div
       id="map-container"
       class="absolute top-0 left-0 h-[200%] w-[200%]"
-      :class="{'transition-transform duration-300 ease-out': centering}"
+      :class="{'transition-transform duration-300 ease-out': transition}"
       :style="{transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`}"
+      @transitionend="transition = false"
     >
       <div
         id="map"

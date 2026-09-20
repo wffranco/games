@@ -1,12 +1,15 @@
 import { b, et, h, m, mr, o, pb, rt, sectors, sm, type Location } from './item-groups';
 
-export type Order = 'advanced' | 'sectors' | undefined;
+export type Order = 'advanced' | 'sectors' | 'chrono';
+
+const path = '/games/maps/super-metroid';
+const link = (value?: Order) => [path, value].filter(Boolean).join("/");
 
 export const orders = [
-  { name: 'Chronological Order', value: undefined },
-  { name: 'Advanced Order', value: 'advanced' },
-  { name: 'Order by Sectors', value: 'sectors' },
-] satisfies { name: string; value: Order }[];
+  { name: 'Chronological Order', value: 'chrono', href: link('chrono') },
+  { name: 'Advanced Order', value: 'advanced', href: link('advanced') },
+  { name: 'Order by Sectors', value: 'sectors', href: link('sectors') },
+] satisfies { name: string; value: Order; href: string }[];
 
 export function sort(order?: Order): Location[] {
   switch (order) {

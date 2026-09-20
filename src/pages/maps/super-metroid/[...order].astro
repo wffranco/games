@@ -1,52 +1,37 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Map from "@/components/maps/Map.astro";
+import Orders from "@/components/maps/Orders.astro";
 import { orders, type Order, sort } from "@/data/super-metroid/locations";
 
-export async function getStaticPaths() {
-  return orders.map(({ value }) => ({ params: { order: value } }));
-}
+export const getStaticPaths = async () => [
+  { params: { order: undefined } },
+  ...orders.map(({ value }) => ({ params: { order: value } })),
+];
 
 interface Params {
   order?: Order;
 }
 
-const { order } = Astro.params as Params;
+const { order = "chrono" } = Astro.params as Params;
 
 const locations = sort(order);
-
-const link = (value: Order) =>
-  ["/games/maps/super-metroid", value].filter(Boolean).join("/");
 ---
 
 <Layout title="Super Metroid - SNES">
   <main class="mx-auto w-max p-3 grid gap-3">
-    <h1 class="text-3xl font-bold text-center">
-      Super Metroid {order && `(${order})`}
-    </h1>
-    <nav>
-      <ul class="w-full flex justify-around">
-        {
-          orders.map(({ name, value }) => (
-            <li>
-              <a
-                href={link(value)}
-                class="border px-2 py-1 rounded bg-white/10 hover:bg-white/20"
-              >
-                {name}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
     <Map
       locations={locations}
       markSize={1.6}
       store="sm"
       scale={0.5}
       translate={[-50, -50]}
-    />
+    >
+      <div slot="header" class="grid gap-2 p-2 bg-gray-800">
+        <h1 class="text-3xl font-bold text-center">Super Metroid</h1>
+        <Orders options={orders} value={order} />
+      </div>
+    </Map>
   </main>
 </Layout>
 

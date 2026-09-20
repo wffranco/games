@@ -1,11 +1,14 @@
 import { as, d, dr, et, h, m, nr, o, pb, sectors, sl, type Location } from './item-groups';
 
-export type Order = 'sectors' | undefined;
+export type Order = 'sectors' | 'chrono';
+
+const path = '/games/maps/metroid-fusion';
+const link = (value?: Order) => [path, value].filter(Boolean).join("/");
 
 export const orders = [
-  { name: 'Chronological Order', value: undefined },
-  { name: 'Order by Sectors', value: 'sectors' },
-] satisfies { name: string; value: Order }[];
+  { name: 'Chronological Order', value: 'chrono', href: link('chrono') },
+  { name: 'Order by Sectors', value: 'sectors', href: link('sectors') },
+] satisfies { name: string; value: Order; href: string }[];
 
 export function sort(order?: Order): Location[] {
   switch (order) {
